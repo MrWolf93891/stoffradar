@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Stoffradar">
+<meta name="theme-color" content="#F3F4F1">
+<title>Stoffradar OWL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F3F4F1; --surface:#FFFFFF; --surface-2:#FAFAF8;
+  --ink:#101418; --soft:#565D65; --mute:#848B92;
+  --line:#E2E4DF; --line-2:#CFD2CC;
+  --accent:#1D5C55; --accent-soft:#E2EEEB;
+  --marker:#EFD35B; --band:rgba(239,211,91,.5);
+  --warn:#9A3B2A; --ok:#3F6B4E;
+  --r:10px; --r-s:6px;
+  --sans:'Inter Tight','Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --serif:'Source Serif 4',Georgia,'Times New Roman',serif;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#101316; --surface:#171B1F; --surface-2:#1C2126;
+    --ink:#EDEEEA; --soft:#AEB5BC; --mute:#7F868D;
+    --line:#252A2F; --line-2:#333A40;
+    --accent:#7FC9BC; --accent-soft:#16282A;
+    --marker:#D9C04A; --band:rgba(217,192,74,.28);
+    --warn:#D68C7B; --ok:#89BF9B;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101316; --surface:#171B1F; --surface-2:#1C2126;
+  --ink:#EDEEEA; --soft:#AEB5BC; --mute:#7F868D;
+  --line:#252A2F; --line-2:#333A40;
+  --accent:#7FC9BC; --accent-soft:#16282A;
+  --marker:#D9C04A; --band:rgba(217,192,74,.28);
+  --warn:#D68C7B; --ok:#89BF9B;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--sans); font-size:15.5px; line-height:1.5;
+  padding-bottom:env(safe-area-inset-bottom,0px); -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 18px}
+
+/* Kopf */
+header.top{position:sticky;top:0;z-index:40;background:var(--bg);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+.topbar{display:flex;align-items:center;gap:14px;padding:13px 0}
+.logo{font-family:var(--serif);font-weight:700;font-size:20px;letter-spacing:-.015em;margin:0;white-space:nowrap}
+.logo em{font-style:normal;background:linear-gradient(transparent 60%,var(--band) 60%,var(--band) 93%,transparent 93%);padding:0 2px}
+.grow{flex:1}
+.btn{background:var(--surface);border:1px solid var(--line-2);border-radius:var(--r-s);padding:8px 13px;cursor:pointer;font-size:14px;font-weight:500;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .btn.pri,html:not([data-theme]) .btn.pri{color:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.pri{color:#0D1618}}
+.btn.pri:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.6;cursor:default}
+.btn.s{padding:5px 10px;font-size:13px}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--soft)}
+.btn.ghost:hover{background:var(--surface);border-color:var(--line-2);color:var(--ink)}
+.counts{display:flex;gap:16px;font-size:13.5px;color:var(--soft);padding-bottom:11px;flex-wrap:wrap}
+.counts b{color:var(--ink);font-weight:600}
+
+/* Zeitleiste */
+.timeline{display:flex;gap:7px;overflow-x:auto;padding:0 0 12px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.timeline::-webkit-scrollbar{display:none}
+.tl{flex:none;background:var(--surface);border:1px solid var(--line-2);border-radius:99px;padding:6px 13px;cursor:pointer;font-size:13px;color:var(--soft)}
+.tl b{color:var(--ink);font-weight:600}
+.tl[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.tl[aria-pressed="true"] b{color:#fff}
+
+/* Ladeanzeige */
+.loader{background:var(--surface);border:1px solid var(--line-2);border-radius:var(--r);margin:16px 0;overflow:hidden}
+.loader-head{display:flex;align-items:center;gap:12px;padding:13px 15px}
+.loader-head b{font-weight:600}
+.spin{width:15px;height:15px;border:2px solid var(--line-2);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;flex:none}
+@keyframes sp{to{transform:rotate(360deg)}}
+.track{height:3px;background:var(--line)}
+.track div{height:100%;width:0;background:var(--accent);transition:width .3s ease}
+.srclog{max-height:172px;overflow:auto;padding:4px 15px 12px;font-size:13px}
+.srclog div{display:flex;gap:9px;align-items:center;padding:3px 0;color:var(--soft)}
+.srclog i{font-style:normal;width:15px;text-align:center;flex:none}
+.srclog .done{color:var(--ink)}
+.srclog .fail{color:var(--warn)}
+.note-line{padding:0 15px 13px;font-size:13px;color:var(--soft)}
+.note-line.bad{color:var(--warn)}
+.note-line ul{margin:7px 0 0;padding-left:17px}
+
+/* Werkzeugleiste */
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:14px 0 6px;position:sticky;top:0;z-index:20}
+.seg{display:flex;background:var(--surface);border:1px solid var(--line-2);border-radius:99px;padding:3px}
+.seg button{background:none;border:none;border-radius:99px;padding:6px 13px;font-size:13.5px;color:var(--soft);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg);font-weight:500}
+.fld{background:var(--surface);border:1px solid var(--line-2);border-radius:var(--r-s);padding:8px 11px;min-width:0}
+.breakdown{font-size:12.5px;color:var(--mute);margin:2px 0 14px}
+
+/* Gruppen */
+.group{margin:26px 0 0}
+.group-head{display:flex;align-items:baseline;gap:10px;margin:0 0 4px;padding-bottom:9px;border-bottom:2px solid var(--ink)}
+.group-head h2{font-family:var(--serif);font-size:19px;font-weight:700;margin:0;letter-spacing:-.01em}
+.group-head span{font-size:13px;color:var(--mute)}
+.group-note{font-size:13px;color:var(--soft);margin:9px 0 2px;max-width:62ch}
+
+/* Beitrag */
+.item{display:grid;grid-template-columns:96px 1fr;gap:18px;padding:17px 0;border-bottom:1px solid var(--line)}
+@media (max-width:640px){.item{grid-template-columns:1fr;gap:7px}}
+.when{font-size:13px;line-height:1.35}
+.when .d{font-weight:600;color:var(--accent);font-size:15px;display:block}
+.when .s{color:var(--mute);display:block;margin-top:2px}
+@media (max-width:640px){
+  .when{display:flex;gap:8px;align-items:baseline}
+  .when .d{font-size:13.5px}
+  .when .s{margin-top:0}
+}
+.body h3{font-family:var(--serif);font-size:19px;line-height:1.3;font-weight:600;margin:0 0 6px}
+.body h3 a{color:var(--ink);text-decoration:none}
+.body h3 a:hover{text-decoration:underline;text-underline-offset:3px}
+.item.pick .body h3 a{background:linear-gradient(transparent 62%,var(--band) 62%,var(--band) 95%,transparent 95%)}
+.item.read .body h3 a{color:var(--mute)}
+.body p{color:var(--soft);font-size:14.5px;margin:0 0 9px;max-width:68ch}
+.meta{display:flex;gap:7px;flex-wrap:wrap;align-items:center;font-size:12.5px;color:var(--mute);margin-bottom:9px}
+.tag{border:1px solid var(--line-2);border-radius:99px;padding:2px 9px;color:var(--soft)}
+.tag.hot{border-color:var(--marker);background:var(--band);color:var(--ink)}
+.tag.src{border:none;padding:2px 0;color:var(--soft);font-weight:500}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+.notepad{width:100%;max-width:68ch;margin-top:10px;min-height:58px;resize:vertical}
+.also{font-size:12.5px;color:var(--mute);margin-top:7px}
+.empty{padding:50px 0;max-width:54ch;color:var(--soft)}
+.empty h3{font-family:var(--serif);font-size:20px;color:var(--ink);margin:0 0 8px;font-weight:600}
+
+/* Seitenbereich */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin:16px 0}
+.panel h4{margin:0 0 11px;font-size:13px;font-weight:600;color:var(--soft)}
+.panel + .panel{margin-top:12px}
+.chk{display:flex;gap:9px;align-items:center;font-size:14px;padding:4px 0;cursor:pointer}
+.chk input{accent-color:var(--accent);width:16px;height:16px}
+.srcrow{display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-top:1px solid var(--line)}
+.srcrow:first-of-type{border-top:none}
+.srcrow label{flex:1;font-size:14px;line-height:1.3;cursor:pointer}
+.srcrow small{display:block;color:var(--mute);font-size:11.5px;margin-top:2px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--line-2);margin-top:7px;flex:none}
+.dot.ok{background:var(--ok)}.dot.err{background:var(--warn)}.dot.load{background:var(--marker)}
+.x{background:none;border:none;color:var(--mute);cursor:pointer;font-size:16px;padding:2px 5px}
+.x:hover{color:var(--warn)}
+.kat{font-size:11.5px;color:var(--mute);margin:13px 0 3px;font-weight:600}
+#side{display:none}
+#side.open{display:block}
+@media (min-width:1000px){
+  .cols{display:grid;grid-template-columns:1fr 310px;gap:36px;align-items:start}
+  #side{display:block;position:sticky;top:78px}
+  #sideToggle{display:none}
+}
+dialog{border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface);color:var(--ink);padding:0;width:min(560px,92vw)}
+dialog::backdrop{background:rgba(8,12,15,.5)}
+.dlg{padding:20px}
+.dlg h3{font-family:var(--serif);font-size:20px;margin:0 0 6px;font-weight:600}
+.dlg p{color:var(--soft);font-size:14px;margin:0 0 14px;max-width:60ch}
+.dlg .fld{width:100%;margin-bottom:8px}
+.foot{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:15px}
+.tabs button{background:none;border:none;border-bottom:2px solid transparent;padding:8px 11px;cursor:pointer;font-size:14px;color:var(--mute)}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink);font-weight:500}
+.hint{font-size:12.5px;color:var(--mute)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:99px;font-size:14px;z-index:60;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="topbar">
+      <h1 class="logo">Stoff<em>radar</em></h1>
+      <span class="grow"></span>
+      <button class="btn pri" id="go">Quellen lesen</button>
+      <button class="btn ghost" id="sideToggle">Quellen &amp; Filter</button>
+      <button class="btn ghost" id="cfg">⚙</button>
+    </div>
+    <div class="counts" id="counts"></div>
+    <div class="timeline" id="timeline"></div>
+  </div>
+</header>
+
+<div class="wrap cols">
+  <main>
+    <div id="loader"></div>
+
+    <div class="tools">
+      <div class="seg" id="modeSeg">
+        <button data-mode="vorlauf" aria-pressed="true">Mit Vorlauf</button>
+        <button data-mode="alle" aria-pressed="false">Alles</button>
+        <button data-mode="gemerkt" aria-pressed="false">Gemerkt</button>
+      </div>
+      <input class="fld" id="q" placeholder="Suchen" style="flex:1;max-width:220px">
+      <select class="fld" id="sort" style="width:auto">
+        <option value="vorlauf">Nach Vorlauf</option>
+        <option value="score">Nach Stoffpotenzial</option>
+        <option value="date">Nach Eingang</option>
+      </select>
+      <button class="btn s ghost" id="copy">Merkliste kopieren</button>
+    </div>
+    <p class="breakdown" id="breakdown"></p>
+
+    <div id="list"></div>
+  </main>
+
+  <aside id="side">
+    <div class="panel">
+      <h4>Ansicht</h4>
+      <label class="chk"><input type="checkbox" id="hideDaily" checked> Tagesaktuelles ausblenden</label>
+      <label class="chk"><input type="checkbox" id="group" checked> Doppelmeldungen bündeln</label>
+      <label class="chk"><input type="checkbox" id="hideRead"> Gelesenes ausblenden</label>
+    </div>
+
+    <div class="panel">
+      <h4>Themenradar</h4>
+      <p class="hint" style="margin:0 0 9px">Eigene Stichwörter, ein Wort pro Zeile. Treffer stehen immer oben.</p>
+      <textarea class="fld" id="radar" rows="4" style="width:100%"></textarea>
+      <button class="btn s" id="saveRadar" style="margin-top:9px">Radar speichern</button>
+    </div>
+
+    <div class="panel">
+      <h4>Quellen</h4>
+      <div id="srclist"></div>
+      <div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap">
+        <button class="btn s" id="addSrc">Quelle hinzufügen</button>
+        <button class="btn s ghost" id="resetSrc">Standard</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h4>Sicherung</h4>
+      <div style="display:flex;gap:7px">
+        <button class="btn s ghost" id="exp">Sichern</button>
+        <button class="btn s ghost" id="imp">Laden</button>
+      </div>
+      <p class="hint" style="margin:9px 0 0">Merkliste, Notizen und Quellen liegen nur in diesem Browser.</p>
+    </div>
+  </aside>
+</div>
+
+<dialog id="dlg"><div class="dlg" id="dlgBody"></div></dialog>
+<div class="toast" id="toast"></div>
+<input type="file" id="file" accept="application/json" hidden>
+
+<script>
+/* ==========================================================================
+   Stoffradar OWL — sucht Themen mit Vorlauf, nicht die Meldung des Tages.
+   Läuft vollständig lokal; Feeds kommen über öffentliche Weiterleitungen.
+   ========================================================================== */
+
+const GN = q => 'https://news.google.com/rss/search?q='+encodeURIComponent(q)+'&hl=de&gl=DE&ceid=DE%3Ade';
+
+/* --- Quellen ------------------------------------------------------------
+   kind 'feed'  feste Feed-Adresse
+   kind 'site'  Website; Feed wird gesucht, sonst werden Überschriften gelesen */
+const DEFAULT_SOURCES = [
+  // Stadt und Politik: Sitzungen, Vorlagen, Vorhaben
+  {id:'stadt',   k:'Stadt und Politik', name:'Stadt Bielefeld, Presse',        kind:'site', url:'https://www.bielefeld.de/pressemeldungen', on:true},
+  {id:'ris',     k:'Stadt und Politik', name:'Ratsinformationssystem',          kind:'site', url:'https://anwendungen.bielefeld.de/bi/info.asp', on:true},
+  {id:'opendata',k:'Stadt und Politik', name:'Offene Daten Bielefeld',          kind:'site', url:'https://open-data.bielefeld.de/', on:false},
+  {id:'mobiel',  k:'Stadt und Politik', name:'moBiel, Bau und Netz',            kind:'site', url:'https://www.mobiel.de/', on:false},
+  {id:'stw',     k:'Stadt und Politik', name:'Stadtwerke Bielefeld',            kind:'site', url:'https://www.stadtwerke-bielefeld.de/', on:false},
+
+  // Wissenschaft
+  {id:'unibi',   k:'Wissenschaft',      name:'Universität Bielefeld',           kind:'site', url:'https://aktuell.uni-bielefeld.de/', on:true},
+  {id:'hsbi',    k:'Wissenschaft',      name:'HSBI',                            kind:'site', url:'https://www.hsbi.de/', on:true},
+
+  // Kultur und Bühne: Spielpläne und Ausstellungen laufen Monate voraus
+  {id:'theater', k:'Kultur und Bühne',  name:'Theater Bielefeld',               kind:'site', url:'https://www.theater-bielefeld.de/', on:true},
+  {id:'kunsthalle',k:'Kultur und Bühne',name:'Kunsthalle Bielefeld',            kind:'site', url:'https://www.kunsthalle-bielefeld.de/', on:true},
+  {id:'bunker',  k:'Kultur und Bühne',  name:'Bunker Ulmenwall',                kind:'site', url:'https://www.bunker-ulmenwall.org/', on:false},
+  {id:'marketing',k:'Kultur und Bühne', name:'Bielefeld Marketing',             kind:'site', url:'https://www.bielefeld.jetzt/', on:true},
+
+  // Menschen, Vereine, Soziales
+  {id:'bethel',  k:'Menschen und Vereine', name:'Bethel',                       kind:'site', url:'https://www.bethel.de/', on:true},
+  {id:'freiwillig',k:'Menschen und Vereine', name:'Freiwilligenagentur',        kind:'site', url:'https://www.freiwilligenagentur-bielefeld.de/', on:true},
+  {id:'kirche',  k:'Menschen und Vereine', name:'Kirchenkreis Bielefeld',       kind:'site', url:'https://www.kirchenkreis-bielefeld.de/', on:false},
+  {id:'tierheim',k:'Menschen und Vereine', name:'Tierheim Bielefeld',           kind:'site', url:'https://www.tierheim-bielefeld.de/', on:false},
+  {id:'nabu',    k:'Menschen und Vereine', name:'NABU Bielefeld',               kind:'site', url:'https://www.nabu-bielefeld.de/', on:true},
+
+  // Wirtschaft und Handwerk
+  {id:'ihk',     k:'Wirtschaft und Handwerk', name:'IHK Ostwestfalen',          kind:'site', url:'https://www.ostwestfalen.ihk.de/', on:false},
+  {id:'hwk',     k:'Wirtschaft und Handwerk', name:'Handwerkskammer OWL',       kind:'site', url:'https://www.handwerk-owl.de/', on:false},
+
+  // Gezielte Suche nach Zukunftssprache
+  {id:'z-plan',  k:'Zukunftssuche', name:'Geplant, entsteht, Baubeginn',        kind:'feed', url:GN('Bielefeld (geplant OR entsteht OR Baubeginn OR "soll entstehen") when:30d'), on:true},
+  {id:'z-jahr',  k:'Zukunftssuche', name:'Vorhaben für 2027 und später',        kind:'feed', url:GN('(Bielefeld OR "Ostwestfalen-Lippe") (2027 OR 2028 OR 2029) when:30d'), on:true},
+  {id:'z-jub',   k:'Zukunftssuche', name:'Jubiläen und Jahrestage',             kind:'feed', url:GN('(Bielefeld OR "Ostwestfalen-Lippe") (Jubiläum OR Jahrestag OR "Jahre alt") when:30d'), on:true},
+  {id:'z-buerger',k:'Zukunftssuche',name:'Initiativen und Beteiligung',         kind:'feed', url:GN('(Bielefeld OR "Ostwestfalen-Lippe") (Bürgerinitiative OR Petition OR Bürgerbeteiligung OR Volksbegehren) when:30d'), on:true},
+  {id:'z-projekt',k:'Zukunftssuche',name:'Projekte, die anlaufen',              kind:'feed', url:GN('(Bielefeld OR "Ostwestfalen-Lippe") ("Projekt startet" OR "Verein sucht" OR Modellprojekt OR Pilotprojekt) when:30d'), on:true}
+];
+
+/* --- Wann wird daraus ein Dreh? -----------------------------------------
+   Sucht ein künftiges Datum im Text; das entscheidet über die Einordnung. */
+const MONATE={januar:0,februar:1,'märz':2,maerz:2,april:3,mai:4,juni:5,juli:6,august:7,september:8,oktober:9,november:10,dezember:11};
+const JAHRESZEIT={'frühjahr':2,fruehjahr:2,'frühling':2,sommer:6,herbst:9,winter:0,advent:11,weihnachten:11,ostern:3,karneval:1};
+
+function parseWhen(text){
+  const t=(text||'').toLowerCase(), jetzt=new Date(), J=jetzt.getFullYear();
+  const mk=(y,m,d,lab,prec)=>({ts:new Date(y,m,d||1,12).getTime(), label:lab, prec});
+
+  let m=t.match(/\b(\d{1,2})\.\s?(\d{1,2})\.\s?(\d{4})\b/);
+  if(m) return mk(+m[3],+m[2]-1,+m[1], +m[1]+'.'+ +m[2]+'.'+m[3],'tag');
+
+  m=t.match(/\b(\d{1,2})\.\s*(januar|februar|märz|maerz|april|mai|juni|juli|august|september|oktober|november|dezember)\s*(\d{4})?/);
+  if(m){
+    const mon=MONATE[m[2]]; let y=m[3]?+m[3]:J;
+    if(!m[3] && new Date(y,mon,+m[1],12) < jetzt-864e5) y=J+1;
+    return mk(y,mon,+m[1], +m[1]+'. '+m[2][0].toUpperCase()+m[2].slice(1,3)+'.','tag');
+  }
+  m=t.match(/\b(ab|im|bis|zum|ende|anfang|mitte)\s+(januar|februar|märz|maerz|april|mai|juni|juli|august|september|oktober|november|dezember)\s*(\d{4})?/);
+  if(m){
+    const mon=MONATE[m[2]]; let y=m[3]?+m[3]:J;
+    if(!m[3] && mon<jetzt.getMonth()) y=J+1;
+    return mk(y,mon,15, m[1]+' '+m[2][0].toUpperCase()+m[2].slice(1),'monat');
+  }
+  m=t.match(/\b(frühjahr|fruehjahr|frühling|sommer|herbst|winter|advent|weihnachten|ostern|karneval)\b\s*(\d{4})?/);
+  if(m){
+    const mon=JAHRESZEIT[m[1]]; let y=m[2]?+m[2]:J;
+    if(!m[2] && mon<jetzt.getMonth()) y=J+1;
+    return mk(y,mon,15, m[1][0].toUpperCase()+m[1].slice(1)+' '+y,'monat');
+  }
+  m=t.match(/\b(20[2-4]\d)\b/g);
+  if(m){
+    const jahre=m.map(Number).filter(y=>y>=J && y<=J+15);
+    if(jahre.length){ const y=Math.min(...jahre); if(y>J || /\b(bis|ab|für|im jahr)\s+20/.test(t)) return mk(y,5,15,String(y),'jahr'); }
+  }
+  if(/\b(nächste[sn]?\s+jahr|kommende[sn]?\s+jahr)\b/.test(t)) return mk(J+1,5,15,'nächstes Jahr','jahr');
+  if(/\b(nächste[nr]?\s+woche|kommende[nr]?\s+woche)\b/.test(t)) return {ts:Date.now()+7*864e5,label:'nächste Woche',prec:'monat'};
+  if(/\bwintersemester\b/.test(t)) return mk(jetzt.getMonth()>8?J+1:J,9,1,'Wintersemester','monat');
+  if(/\bsommersemester\b/.test(t)) return mk(jetzt.getMonth()>3?J+1:J,3,1,'Sommersemester','monat');
+  return null;
+}
+
+/* Sprache, die Vorlauf verrät */
+const VORHABEN=['geplant','plant','planung','soll entstehen','soll gebaut','entsteht','entstehen','beginnt','startet','start im','künftig','zukünftig','vorbereitung','wird vorbereitet','vorbereitet','soll ','sollen ','vorhaben','konzept','machbarkeitsstudie','entwurf','ausschreibung','wettbewerb','antrag','vorlage','beteiligung','ideenwerkstatt','wird gebaut','bauarbeiten beginnen','eröffnet im','eröffnung im','premiere','erstaufführung','anmeldung','bewerbungsfrist','ab dem','voraussichtlich','angekündigt','in aussicht','beschließen','entscheidung steht','abstimmung','umgestaltet','saniert wird','einweihung'];
+const LANGZEIT=['seit jahren','über jahre','jahrzehnte','langfristig','laufend','begleitet','bauzeit','sanierung','umbau','forschungsprojekt','studie','langzeit','entwicklung','wandel','tradition','generation','gegründet','geschichte','archiv','nachlass','restaurierung','züchtet','sammelt','sammlung','werkstatt','ausbildung','lehrjahr','ehrenamt'];
+const TAGESAKTUELL=['gestern','heute früh','am wochenende','soeben','aktuell wird','unfall','zusammenstoß','verletzt','festgenommen','tatverdächtig','zeugen gesucht','einbrecher','gestohlen','brannte','feuerwehr rückte','endstand','spielbericht','einzelkritik','spieltag','tabellenplatz','gewann mit','verlor mit','blitzer','stau auf','vollsperrung','umleitung','wetterwarnung','fand statt','fand am','feierte','eröffnete gestern','wurde eröffnet'];
+
+/* Wovon eine Geschichte lebt */
+const SIGNALS=[
+  {tag:'Protagonist', w:15, words:['porträt','erzählt','erinnert sich','zeitzeug','überlebende','sein leben','ihr leben','ehrenamtlich','gründerin','gründer','meisterin','der letzte','die letzte','als einzige','als erster','als erste','widmet sich','kämpft','traum','berufung','schicksal','familie','ehepaar','nachbarn','anwohner','pflegerin','betroffene','freiwillige','gibt auf','übernimmt']},
+  {tag:'Konflikt', w:17, words:['streit','gestritten','protest','widerstand','bürgerinitiative','klage','prozess','gericht','kritik','umstritten','demonstration','besetzt','räumung','petition','vorwurf','skandal','wehren sich','debatte','abgelehnt','gescheitert','blockiert','verbot','infrage gestellt']},
+  {tag:'Schauplatz', w:11, words:['werkstatt','atelier','bühne','tierheim','tierpark','bauernhof','hofladen','wald','keller','bunker','turm','brauerei','gleis','markt','kirche','kloster','friedhof','labor','studio','chor','orchester','festival','freibad','kleingarten','museum','bibliothek','werkhalle','fabrik','mühle','fachwerk','hallenbad','sternwarte']},
+  {tag:'Ungewöhnlich', w:16, words:['kurios','einzigartig','rekord','weltweit','geheim','rätsel','verschwunden','wiederentdeckt','skurril','ausgerechnet','erfindet','erfindung','experiment','älteste','größte','kleinste','ungewöhnlich','erstmals','zum ersten mal']},
+  {tag:'Gesellschaft', w:12, words:['armut','wohnungsnot','obdachlos','pflege','demenz','inklusion','integration','geflüchtete','einsamkeit','jugendliche','senior','schule','kita','ärztemangel','klimaschutz','artensterben','leerstand','innenstadt','suchthilfe','teilhabe','barrierefrei','nachhaltig','artenschutz','renaturierung']},
+  {tag:'Region', w:7, words:['bielefeld','sennestadt','brackwede','schildesche','heepen','jöllenbeck','stieghorst','dornberg','gadderbaum','senne','sparrenburg','teutoburger','hermannsweg','bethel','owl','ostwestfalen','obersee','johannisberg','ravensberger','olderdissen']}
+];
+
+const KLASSE={
+  termin:{rang:0, titel:'Termin steht fest', note:'Ein Datum in der Zukunft ist genannt. Hier lässt sich ein Dreh planen, vorher recherchieren und am Tag selbst drehen.'},
+  vorhaben:{rang:1, titel:'Vorhaben in Vorbereitung', note:'Etwas ist angekündigt, beschlossen oder in Planung, ohne festen Termin. Gut für eine Begleitung von Anfang an.'},
+  langzeit:{rang:2, titel:'Langzeitthemen', note:'Themen ohne Ablaufdatum: Menschen, Orte und Entwicklungen, die in Wochen genauso tragen wie heute.'},
+  offen:{rang:3, titel:'Weitere Fundstücke', note:''},
+  tagesaktuell:{rang:4, titel:'Tagesaktuelles', note:'Ereignisse, die vorbei sind, sobald sie gemeldet werden.'}
+};
+
+/* --- Zustand ------------------------------------------------------------ */
+const LS='stoffradar.v2';
+let S={
+  sources:null,
+  prefs:{mode:'vorlauf', sort:'vorlauf', hideDaily:true, group:true, hideRead:false, radar:[], schwelle:28, monat:null},
+  saved:{}, read:{}, notes:{}, cache:{}, lastRun:0, letzte:null
+};
+let ARTICLES=[], BUSY=false, STATS={};
+
+function load(){
+  try{ const raw=localStorage.getItem(LS); if(raw){ const d=JSON.parse(raw); S={...S,...d, prefs:{...S.prefs,...(d.prefs||{})}}; } }catch(e){}
+  if(!Array.isArray(S.sources)||!S.sources.length) S.sources=JSON.parse(JSON.stringify(DEFAULT_SOURCES));
+  S.sources.forEach(s=>{ s.status='idle'; s.count=0; });
+}
+function save(){
+  try{ localStorage.setItem(LS, JSON.stringify({...S, sources:S.sources.map(({status,count,err,...r})=>r)})); }catch(e){}
+}
+function merkeErgebnis(){
+  try{
+    const schlank=ARTICLES.slice(0,400).map(a=>({title:a.title,link:a.link,desc:a.desc,ts:a.ts,outlet:a.outlet,source:a.source,sourceId:a.sourceId,id:a.id}));
+    S.letzte={zeit:Date.now(), items:schlank}; save();
+  }catch(e){}
+}
+
+/* --- Netz --------------------------------------------------------------- */
+const PROXIES=[
+  u=>u,
+  u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u),
+  u=>'https://api.codetabs.com/v1/proxy/?quest='+encodeURIComponent(u),
+  u=>'https://api.allorigins.win/raw?charset=UTF-8&url='+encodeURIComponent(u),
+  u=>'https://corsproxy.io/?url='+encodeURIComponent(u)
+];
+const PROXY_NAMES=['Direktzugriff','allorigins.win','codetabs.com','allorigins (UTF-8)','corsproxy.io'];
+
+async function grab(url, ms=9000, maxTries=5){
+  let last;
+  const reihe = S.cache.pi!=null ? [S.cache.pi,...PROXIES.keys()].filter((v,i,a)=>a.indexOf(v)===i) : [...PROXIES.keys()];
+  for(const i of reihe.slice(0,maxTries)){
+    const c=new AbortController(), t=setTimeout(()=>c.abort(),ms);
+    try{
+      const r=await fetch(PROXIES[i](url),{signal:c.signal,redirect:'follow'});
+      clearTimeout(t);
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      const txt=await r.text();
+      if(txt && txt.length>120){ if(i>0) S.cache.pi=i; return txt; }
+      throw new Error('leere Antwort');
+    }catch(e){ clearTimeout(t); last=e; }
+  }
+  throw last||new Error('nicht erreichbar');
+}
+
+/* --- Feeds und Überschriften -------------------------------------------- */
+const PFADE=['/feed','/rss','/rss.xml','/feed.xml','/index.xml','/?feed=rss2','/news/feed','/aktuelles/feed'];
+const abs=(b,h)=>{ try{ return new URL(h,b).href; }catch(e){ return null; } };
+const clean=s=>{ if(!s) return ''; const d=document.createElement('div'); d.innerHTML=s; return (d.textContent||'').replace(/\s+/g,' ').trim(); };
+const tx=(n,sel)=>{ const e=n.querySelector(sel); return e?(e.textContent||'').trim():''; };
+
+function parseFeed(xmlText){
+  const doc=new DOMParser().parseFromString(xmlText.replace(/^\uFEFF/,''),'text/xml');
+  if(doc.querySelector('parsererror')) return [];
+  const nodes=[...doc.querySelectorAll('item'), ...doc.querySelectorAll('entry')], out=[];
+  for(const n of nodes){
+    let title=clean(tx(n,'title')); if(!title) continue;
+    let link=''; const lk=n.querySelector('link');
+    if(lk) link=(lk.getAttribute('href')||lk.textContent||'').trim();
+    if(!link) link=tx(n,'guid');
+    let desc=clean(tx(n,'description')||tx(n,'summary')||tx(n,'content'));
+    let ts=Date.parse(tx(n,'pubDate')||tx(n,'published')||tx(n,'updated')||tx(n,'date')||''); if(isNaN(ts)) ts=0;
+    let outlet='';
+    const m=title.match(/\s[-–—]\s([^-–—]{2,42})$/);
+    if(m && /news\.google/.test(link)){ outlet=m[1].trim(); title=title.slice(0,m.index).trim(); }
+    if(!outlet) outlet=clean(tx(n,'source'));
+    if(desc) desc=desc.replace(/\s*(Vollständige Berichterstattung|View Full Coverage).*$/i,'');
+    out.push({title,link,desc:desc.slice(0,360),ts,outlet});
+  }
+  return out;
+}
+
+/* Wenn kein Feed da ist: Überschriften der Seite lesen */
+function readHeadlines(html, base){
+  const doc=new DOMParser().parseFromString(html,'text/html');
+  doc.querySelectorAll('nav,header,footer,script,style,aside').forEach(e=>e.remove());
+  const host=(()=>{try{return new URL(base).host}catch(e){return ''}})();
+  const raus=/^(mehr|weiterlesen|startseite|kontakt|impressum|datenschutz|suche|anmelden|login|cookie|newsletter|zur startseite|alle anzeigen|nach oben)$/i;
+  const seen=new Set(), out=[];
+  for(const a of doc.querySelectorAll('a[href]')){
+    const t=clean(a.textContent);
+    if(t.length<26||t.length>170) continue;
+    if(raus.test(t)) continue;
+    if(!/[a-zäöüß]/i.test(t)) continue;
+    const href=abs(base,a.getAttribute('href')); if(!href) continue;
+    try{ if(new URL(href).host!==host) continue; }catch(e){ continue; }
+    const key=t.toLowerCase().slice(0,60); if(seen.has(key)) continue; seen.add(key);
+    // Text im Umfeld als Beschreibung
+    let desc='';
+    const p=a.closest('li,article,div');
+    if(p){ const pt=clean(p.textContent); if(pt.length>t.length+25) desc=pt.replace(t,'').trim().slice(0,300); }
+    out.push({title:t, link:href, desc, ts:0, outlet:''});
+    if(out.length>=30) break;
+  }
+  return out;
+}
+
+async function leseQuelle(src){
+  if(src.kind==='feed'){ return parseFeed(await grab(src.url)); }
+  const cached=S.cache[src.id];
+  if(cached){ try{ const it=parseFeed(await grab(cached,7000,2)); if(it.length) return it; }catch(e){} }
+  let html='';
+  try{ html=await grab(src.url,9000,3); }catch(e){}
+  if(html){
+    const doc=new DOMParser().parseFromString(html,'text/html');
+    const kand=[...doc.querySelectorAll('link[rel~="alternate"]')]
+      .filter(l=>/rss|atom|xml/i.test(l.getAttribute('type')||''))
+      .map(l=>abs(src.url,l.getAttribute('href'))).filter(Boolean);
+    for(const c of [...new Set(kand)].slice(0,4)){
+      try{ const it=parseFeed(await grab(c,7000,2)); if(it.length){ S.cache[src.id]=c; return it; } }catch(e){}
+    }
+  }
+  for(const p of PFADE){
+    const c=abs(src.url,p); if(!c) continue;
+    try{ const it=parseFeed(await grab(c,6000,2)); if(it.length){ S.cache[src.id]=c; return it; } }catch(e){}
+  }
+  if(html){ const hl=readHeadlines(html,src.url); if(hl.length>=4){ src.gelesen='Überschriften'; return hl; } }
+  throw new Error('kein Feed, keine Überschriften');
+}
+
+/* --- Bewerten und einordnen --------------------------------------------- */
+function bewerte(a){
+  const hay=(a.title+' '+(a.desc||'')).toLowerCase();
+  let s=0; const tags=[];
+  for(const g of SIGNALS){
+    let hit=0;
+    for(const w of g.words){ if(hay.includes(w)){ hit++; if(hit>=2) break; } }
+    if(hit){ s+=g.w+(hit>1?4:0); tags.push(g.tag); }
+  }
+  const tagesaktuell=TAGESAKTUELL.some(w=>hay.includes(w));
+  const vorhaben=VORHABEN.some(w=>hay.includes(w));
+  const langzeit=LANGZEIT.some(w=>hay.includes(w));
+  const when=parseWhen(a.title) || parseWhen(a.title+' '+(a.desc||''));
+  const zukunft = when && when.ts > Date.now()-2*864e5;
+
+  a.when = zukunft ? when : null;
+  if(zukunft){ a.klasse='termin'; s+=34; }
+  else if(vorhaben && !tagesaktuell){ a.klasse='vorhaben'; s+=26; }
+  else if(langzeit && !tagesaktuell){ a.klasse='langzeit'; s+=19; }
+  else if(tagesaktuell){ a.klasse='tagesaktuell'; s-=34; }
+  else a.klasse='offen';
+
+  if(a.when && a.when.ts>Date.now()+21*864e5) s+=8;   // genug Vorlauf zum Planen
+  if((a.desc||'').length>150) s+=4;
+
+  let radarHit=null;
+  for(const w of (S.prefs.radar||[])){ const lw=w.toLowerCase().trim(); if(lw&&hay.includes(lw)){ radarHit=w; s+=40; break; } }
+  if(radarHit) tags.unshift('Radar: '+radarHit);
+
+  a.score=Math.max(0,Math.min(100,Math.round(s)));
+  a.tags=tags;
+  a.pick=a.score>=S.prefs.schwelle && a.klasse!=='tagesaktuell';
+  return a;
+}
+
+/* --- Abrufen ------------------------------------------------------------ */
+function logZeile(src){
+  const z={idle:'·',load:'<span class="spin"></span>',ok:'✓',empty:'–',err:'×'}[src.status]||'·';
+  const cls=src.status==='ok'?'done':src.status==='err'?'fail':'';
+  const info=src.status==='err'?(src.err||'nicht erreichbar'):src.status==='ok'?(src.count+(src.gelesen?' Überschriften':' Einträge')):src.status==='load'?'wird gelesen':'';
+  return '<div class="'+cls+'"><i>'+z+'</i><span style="flex:1">'+src.name+'</span><span style="color:var(--mute)">'+info+'</span></div>';
+}
+function zeichneLoader(aktiv, fertig, start){
+  const sek=Math.round((Date.now()-start)/1000);
+  document.getElementById('loader').innerHTML=
+    '<div class="loader"><div class="loader-head"><span class="spin"></span>'+
+    '<b>'+fertig+' von '+aktiv.length+' Quellen gelesen</b>'+
+    '<span style="color:var(--mute);font-size:13px">'+ARTICLES.length+' Fundstücke · '+sek+' s</span></div>'+
+    '<div class="track"><div style="width:'+Math.round(fertig/aktiv.length*100)+'%"></div></div>'+
+    '<div class="srclog">'+aktiv.map(logZeile).join('')+'</div></div>';
+}
+function bilanz(aktiv){
+  const err=aktiv.filter(s=>s.status==='err'), leer=aktiv.filter(s=>s.status==='empty');
+  let html='';
+  if(!ARTICLES.length){
+    html='<div class="loader"><div class="note-line bad"><b>Nichts empfangen.</b> Alle Quellen blieben ohne Ergebnis. '+
+      '<button class="btn s" id="diag" style="margin-left:6px">Verbindung prüfen</button></div></div>';
+  }else if(err.length||leer.length){
+    html='<div class="loader"><div class="note-line"><b>'+ARTICLES.length+' Fundstücke aus '+(aktiv.length-err.length-leer.length)+' Quellen.</b> '+
+      (err.length?'Ohne Verbindung: '+err.map(s=>s.name).join(', ')+'. ':'')+
+      (leer.length?'Ohne Einträge: '+leer.map(s=>s.name).join(', ')+'. ':'')+
+      'Solche Quellen lassen sich rechts abschalten oder ersetzen. '+
+      '<button class="btn s" id="diag" style="margin-left:6px">Verbindung prüfen</button></div></div>';
+  }
+  document.getElementById('loader').innerHTML=html;
+  const d=document.getElementById('diag'); if(d) d.addEventListener('click',diagnose);
+}
+
+async function lauf(){
+  if(BUSY) return; BUSY=true;
+  const b=document.getElementById('go'); b.disabled=true; b.textContent='liest …';
+  const aktiv=S.sources.filter(s=>s.on); ARTICLES=[];
+  let fertig=0; const start=Date.now();
+  aktiv.forEach(s=>{s.status='idle';s.count=0;s.gelesen=null;});
+  zeichneLoader(aktiv,0,start);
+  const tick=setInterval(()=>zeichneLoader(aktiv,fertig,start),500);
+
+  const queue=[...aktiv];
+  const worker=async()=>{
+    while(queue.length){
+      const src=queue.shift(); src.status='load';
+      try{
+        const items=await leseQuelle(src);
+        items.forEach(it=>{ it.source=src.name; it.sourceId=src.id; it.id=(it.link||it.title).slice(0,220); ARTICLES.push(bewerte(it)); });
+        src.count=items.length; src.status=items.length?'ok':'empty';
+      }catch(e){ src.status='err'; src.err=(e&&e.message)||'Fehler'; }
+      fertig++;
+    }
+  };
+  await Promise.all([worker(),worker(),worker(),worker(),worker()]);
+  clearInterval(tick);
+  S.lastRun=Date.now();
+  merkeErgebnis();
+  b.disabled=false; b.textContent='Quellen lesen';
+  BUSY=false;
+  bilanz(aktiv); renderSources(); render();
+}
+
+async function diagnose(){
+  const L=document.getElementById('loader');
+  L.innerHTML='<div class="loader"><div class="note-line"><span class="spin"></span> Verbindung wird geprüft …</div></div>';
+  const test=GN('Bielefeld'); const zeilen=[]; let any=false;
+  for(let i=0;i<PROXIES.length;i++){
+    if(i) await new Promise(r=>setTimeout(r,800));
+    let ok=false,msg='';
+    const c=new AbortController(), t=setTimeout(()=>c.abort(),9000);
+    try{
+      const r=await fetch(PROXIES[i](test),{signal:c.signal});
+      const txt=await r.text();
+      ok=r.ok && /<(item|entry)[\s>]/i.test(txt);
+      msg=ok?'erreichbar':'Antwort unbrauchbar (HTTP '+r.status+')';
+    }catch(e){ msg=e&&e.name==='AbortError'?'Zeitüberschreitung':(e.message||'blockiert'); }
+    clearTimeout(t);
+    if(ok){ any=true; S.cache.pi=i; }
+    zeilen.push('<li>'+PROXY_NAMES[i]+': '+(ok?'<b>erreichbar</b>':msg)+'</li>');
+  }
+  const liste='<ul>'+zeilen.join('')+'</ul>';
+  L.innerHTML='<div class="loader"><div class="note-line'+(any||ARTICLES.length?'':' bad')+'">'+
+    (any?'<b>Verbindung steht.</b> Der nächste Durchlauf sollte klappen.'
+      :ARTICLES.length?'<b>Der Abruf funktioniert grundsätzlich</b> — es liegen '+ARTICLES.length+' Fundstücke vor. Die Weiterleitungsdienste begrenzen die Anfragen pro Minute und schweigen kurz nach einem großen Durchlauf. Ein, zwei Minuten warten.'
+      :'<b>Zurzeit kein Zugriff.</b> Entweder sind die Weiterleitungsdienste ausgelastet, oder die Seite darf keine fremden Adressen laden.')
+    +liste+'</div></div>';
+}
+
+/* --- Auswahl und Sortierung --------------------------------------------- */
+function dupKey(t){
+  const w=t.toLowerCase().replace(/[^a-zäöüß0-9 ]/g,' ').split(/\s+/).filter(x=>x.length>4);
+  return w.sort((a,b)=>b.length-a.length).slice(0,4).sort().join('|');
+}
+function auswahl(){
+  const p=S.prefs, q=(document.getElementById('q').value||'').toLowerCase().trim();
+  STATS={tages:0,filter:0,gebuendelt:0};
+  let arr=ARTICLES.filter(a=>{
+    if(p.mode==='gemerkt') return !!S.saved[a.id];
+    if(p.hideDaily && a.klasse==='tagesaktuell' && !S.saved[a.id]){ STATS.tages++; return false; }
+    if(p.mode==='vorlauf' && !['termin','vorhaben','langzeit'].includes(a.klasse) && !S.saved[a.id]){ STATS.filter++; return false; }
+    if(p.hideRead && S.read[a.id] && !S.saved[a.id]){ STATS.filter++; return false; }
+    if(p.monat && (!a.when || monKey(a.when.ts)!==p.monat)){ STATS.filter++; return false; }
+    if(q && !(a.title+' '+(a.desc||'')).toLowerCase().includes(q)){ STATS.filter++; return false; }
+    return true;
+  });
+  const vor=arr.length;
+  if(p.group){
+    const g=new Map();
+    arr.forEach(a=>{ const k=dupKey(a.title)||a.id; if(!g.has(k)) g.set(k,[]); g.get(k).push(a); });
+    arr=[...g.values()].map(list=>{
+      list.sort((x,y)=>(y.score-x.score)||((y.desc||'').length-(x.desc||'').length));
+      const rep=list[0], eigen=rep.outlet||rep.source;
+      rep.also=[...new Set(list.map(x=>x.outlet||x.source))].filter(o=>o&&o!==eigen);
+      return rep;
+    });
+    STATS.gebuendelt=vor-arr.length;
+  } else arr.forEach(a=>a.also=[]);
+
+  arr.sort((a,b)=>{
+    if(p.sort==='score') return b.score-a.score || (b.ts-a.ts);
+    if(p.sort==='date') return (b.ts-a.ts) || (b.score-a.score);
+    const ra=KLASSE[a.klasse].rang, rb=KLASSE[b.klasse].rang;
+    if(ra!==rb) return ra-rb;
+    if(a.when&&b.when) return a.when.ts-b.when.ts;
+    if(a.when) return -1;
+    if(b.when) return 1;
+    return b.score-a.score;
+  });
+  return arr;
+}
+const monKey=ts=>{ const d=new Date(ts); return d.getFullYear()+'-'+d.getMonth(); };
+const monName=ts=>new Date(ts).toLocaleDateString('de-DE',{month:'short',year:'2-digit'});
+const esc=s=>(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* --- Darstellung -------------------------------------------------------- */
+function render(){
+  const arr=auswahl(), p=S.prefs;
+  const termine=ARTICLES.filter(a=>a.when).length, picks=ARTICLES.filter(a=>a.pick).length;
+  document.getElementById('counts').innerHTML=
+    '<span><b>'+ARTICLES.length+'</b> gelesen</span><span><b>'+termine+'</b> mit Termin</span>'+
+    '<span><b>'+picks+'</b> markiert</span><span><b>'+Object.keys(S.saved).length+'</b> gemerkt</span>'+
+    (S.lastRun?'<span>Stand '+new Date(S.lastRun).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+'</span>':'');
+
+  // Zeitleiste
+  const monate=new Map();
+  ARTICLES.filter(a=>a.when).forEach(a=>{ const k=monKey(a.when.ts); if(!monate.has(k)) monate.set(k,{ts:a.when.ts,n:0}); monate.get(k).n++; });
+  const tl=[...monate.entries()].sort((a,b)=>a[1].ts-b[1].ts).slice(0,14);
+  document.getElementById('timeline').innerHTML = tl.length
+    ? '<button class="tl" data-mon="" aria-pressed="'+(!p.monat)+'">alle Termine</button>'+
+      tl.map(([k,v])=>'<button class="tl" data-mon="'+k+'" aria-pressed="'+(p.monat===k)+'">'+monName(v.ts)+' <b>'+v.n+'</b></button>').join('')
+    : '';
+
+  const teile=[];
+  if(STATS.tages) teile.push(STATS.tages+' tagesaktuelle ausgeblendet');
+  if(STATS.gebuendelt) teile.push(STATS.gebuendelt+' gebündelt');
+  if(STATS.filter) teile.push(STATS.filter+' durch Filter');
+  const bd=document.getElementById('breakdown');
+  bd.textContent = ARTICLES.length&&teile.length ? 'von '+ARTICLES.length+' gelesenen Meldungen · '+teile.join(' · ') : '';
+
+  const L=document.getElementById('list');
+  if(!arr.length){
+    L.innerHTML='<div class="empty"><h3>'+(ARTICLES.length?'Hier ist gerade nichts':'Noch nichts gelesen')+'</h3><p>'+
+      (ARTICLES.length?'Auf „Alles“ umschalten, den Monatsfilter lösen oder die Suche leeren.'
+       :'Oben auf „Quellen lesen“ tippen. Der erste Durchlauf dauert ein bis zwei Minuten, weil bei jeder Website erst nach einem Feed gesucht wird.')+'</p></div>';
+    return;
+  }
+  const gruppen={};
+  arr.forEach(a=>{ (gruppen[a.klasse]=gruppen[a.klasse]||[]).push(a); });
+  const reihe=Object.keys(gruppen).sort((a,b)=>KLASSE[a].rang-KLASSE[b].rang);
+  L.innerHTML=reihe.map(k=>{
+    const g=KLASSE[k];
+    return '<section class="group"><div class="group-head"><h2>'+g.titel+'</h2><span>'+gruppen[k].length+'</span></div>'+
+      (g.note?'<p class="group-note">'+g.note+'</p>':'')+
+      gruppen[k].map(karte).join('')+'</section>';
+  }).join('');
+}
+
+function karte(a){
+  const sv=S.saved[a.id], rd=S.read[a.id], note=S.notes[a.id]||'';
+  const wann = a.when
+    ? '<span class="d">'+esc(a.when.label)+'</span><span class="s">'+restzeit(a.when.ts)+'</span>'
+    : '<span class="s">'+({vorhaben:'angekündigt',langzeit:'jederzeit',tagesaktuell:'von heute',offen:'ohne Datum'}[a.klasse]||'')+'</span>';
+  return '<article class="item'+(a.pick?' pick':'')+(rd?' read':'')+'" data-id="'+esc(a.id)+'">'+
+    '<div class="when">'+wann+'</div><div class="body">'+
+      '<h3><a href="'+esc(a.link)+'" target="_blank" rel="noopener">'+esc(a.title)+'</a></h3>'+
+      (a.desc?'<p>'+esc(a.desc)+'</p>':'')+
+      '<div class="meta"><span class="tag src">'+esc(a.outlet||a.source)+'</span>'+
+        (a.pick?'<span class="tag hot">Stoff '+a.score+'</span>':'')+
+        a.tags.slice(0,4).map(t=>'<span class="tag">'+esc(t)+'</span>').join('')+'</div>'+
+      (a.also&&a.also.length?'<div class="also">Auch bei: '+esc(a.also.slice(0,4).join(', '))+'</div>':'')+
+      '<div class="acts">'+
+        '<button class="btn s save">'+(sv?'★ gemerkt':'☆ merken')+'</button>'+
+        '<button class="btn s ghost read">'+(rd?'ungelesen':'gelesen')+'</button>'+
+        '<button class="btn s ghost note">'+(note?'Notiz ändern':'Notiz')+'</button>'+
+      '</div>'+
+      (note?'<textarea class="fld notepad" data-note>'+esc(note)+'</textarea>':'')+
+    '</div></article>';
+}
+function restzeit(ts){
+  const d=Math.round((ts-Date.now())/864e5);
+  if(d<0) return 'läuft';
+  if(d===0) return 'heute';
+  if(d===1) return 'morgen';
+  if(d<14) return 'in '+d+' Tagen';
+  if(d<70) return 'in '+Math.round(d/7)+' Wochen';
+  return 'in '+Math.round(d/30)+' Monaten';
+}
+
+function renderSources(){
+  const el=document.getElementById('srclist'); let html=''; let kat='';
+  S.sources.forEach(s=>{
+    if(s.k!==kat){ kat=s.k; html+='<div class="kat">'+esc(kat)+'</div>'; }
+    const cls=s.status==='ok'?'ok':s.status==='err'?'err':s.status==='load'?'load':'';
+    const info=s.status==='err'?(s.err||'nicht erreichbar'):s.status==='empty'?'keine Einträge':s.count?(s.count+' Einträge'+(s.gelesen?' (Überschriften)':'')):(s.kind==='site'?'Website':'Feed');
+    html+='<div class="srcrow" data-sid="'+esc(s.id)+'"><span class="dot '+cls+'"></span>'+
+      '<label><input type="checkbox" class="on" '+(s.on?'checked':'')+' style="margin-right:7px;accent-color:var(--accent)">'+esc(s.name)+
+      '<small>'+esc(info)+'</small></label><button class="x del">×</button></div>';
+  });
+  el.innerHTML=html;
+}
+
+/* --- Bedienung ---------------------------------------------------------- */
+const toast=m=>{ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); };
+
+document.getElementById('list').addEventListener('click',e=>{
+  const it=e.target.closest('.item'); if(!it) return;
+  const id=it.dataset.id;
+  if(e.target.closest('a')){ S.read[id]=1; save(); render(); return; }
+  if(e.target.classList.contains('save')){ S.saved[id]?delete S.saved[id]:S.saved[id]=1; save(); render(); }
+  if(e.target.classList.contains('read')){ S.read[id]?delete S.read[id]:S.read[id]=1; save(); render(); }
+  if(e.target.classList.contains('note')){
+    let ta=it.querySelector('[data-note]');
+    if(!ta){ ta=document.createElement('textarea'); ta.className='fld notepad'; ta.dataset.note=''; ta.value=S.notes[id]||''; it.querySelector('.body').appendChild(ta); }
+    ta.focus();
+  }
+});
+document.getElementById('list').addEventListener('input',e=>{
+  if(e.target.matches('[data-note]')){
+    const id=e.target.closest('.item').dataset.id, v=e.target.value.trim();
+    if(v) S.notes[id]=v; else delete S.notes[id];
+    clearTimeout(window.__n); window.__n=setTimeout(save,500);
+  }
+});
+document.getElementById('timeline').addEventListener('click',e=>{
+  const b=e.target.closest('.tl'); if(!b) return;
+  S.prefs.monat = b.dataset.mon || null; save(); render();
+});
+document.getElementById('modeSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  S.prefs.mode=b.dataset.mode;
+  document.querySelectorAll('#modeSeg button').forEach(x=>x.setAttribute('aria-pressed',x===b));
+  save(); render();
+});
+document.getElementById('q').addEventListener('input',()=>{ clearTimeout(window.__q); window.__q=setTimeout(render,180); });
+document.getElementById('sort').addEventListener('change',e=>{ S.prefs.sort=e.target.value; save(); render(); });
+['hideDaily','group','hideRead'].forEach(id=>{
+  document.getElementById(id).addEventListener('change',e=>{ S.prefs[id]=e.target.checked; save(); render(); });
+});
+document.getElementById('saveRadar').addEventListener('click',()=>{
+  S.prefs.radar=document.getElementById('radar').value.split('\n').map(w=>w.trim()).filter(Boolean);
+  ARTICLES.forEach(bewerte); save(); render(); toast('Themenradar gespeichert');
+});
+document.getElementById('sideToggle').addEventListener('click',()=>document.getElementById('side').classList.toggle('open'));
+document.getElementById('go').addEventListener('click',lauf);
+
+document.getElementById('srclist').addEventListener('change',e=>{
+  if(e.target.classList.contains('on')){
+    const id=e.target.closest('.srcrow').dataset.sid;
+    S.sources.find(x=>x.id===id).on=e.target.checked; save();
+  }
+});
+document.getElementById('srclist').addEventListener('click',e=>{
+  if(e.target.classList.contains('del')){
+    const id=e.target.closest('.srcrow').dataset.sid;
+    S.sources=S.sources.filter(x=>x.id!==id);
+    ARTICLES=ARTICLES.filter(a=>a.sourceId!==id);
+    save(); renderSources(); render();
+  }
+});
+document.getElementById('resetSrc').addEventListener('click',()=>{
+  S.sources=JSON.parse(JSON.stringify(DEFAULT_SOURCES)); S.cache={}; save(); renderSources(); toast('Standardquellen wiederhergestellt');
+});
+
+const dlg=document.getElementById('dlg'), dlgBody=document.getElementById('dlgBody');
+document.getElementById('addSrc').addEventListener('click',()=>{
+  dlgBody.innerHTML=`<h3>Quelle hinzufügen</h3>
+   <div class="tabs"><button aria-selected="true" data-tab="web">Website</button><button aria-selected="false" data-tab="topic">Thema beobachten</button></div>
+   <div data-pane="web"><p>Adresse einfügen. Gibt es einen Feed, wird er gefunden; sonst werden die Überschriften der Seite gelesen.</p>
+     <input class="fld" id="nsUrl" placeholder="https://www.verein-beispiel.de">
+     <input class="fld" id="nsName" placeholder="Name (optional)">
+     <input class="fld" id="nsKat" placeholder="Gruppe, z. B. Kultur und Bühne (optional)"></div>
+   <div data-pane="topic" hidden><p>Ein Stichwort, das laufend verfolgt wird — gut für ein Vorhaben, eine Person oder einen Ort.</p>
+     <input class="fld" id="nsTopic" placeholder="z. B. Kunsthalle Umbau"></div>
+   <div class="foot"><button class="btn ghost" data-close>Abbrechen</button><button class="btn pri" id="nsAdd">Hinzufügen</button></div>`;
+  dlg.showModal();
+});
+dlgBody.addEventListener('click',async e=>{
+  if(e.target.matches('[data-close]')) dlg.close();
+  if(e.target.dataset.tab){
+    dlgBody.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-selected',b===e.target));
+    dlgBody.querySelectorAll('[data-pane]').forEach(p=>p.hidden=p.dataset.pane!==e.target.dataset.tab);
+  }
+  if(e.target.id==='nsAdd'){
+    const tab=dlgBody.querySelector('.tabs button[aria-selected="true"]').dataset.tab;
+    let src;
+    if(tab==='topic'){
+      const q=dlgBody.querySelector('#nsTopic').value.trim(); if(!q) return;
+      src={id:'t'+Date.now(), k:'Eigene Quellen', name:q, kind:'feed', url:GN(q+' when:30d'), on:true};
+    }else{
+      let u=dlgBody.querySelector('#nsUrl').value.trim(); if(!u) return;
+      if(!/^https?:\/\//i.test(u)) u='https://'+u;
+      const name=dlgBody.querySelector('#nsName').value.trim()||u.replace(/^https?:\/\/(www\.)?/,'').split('/')[0];
+      const kat=dlgBody.querySelector('#nsKat').value.trim()||'Eigene Quellen';
+      const feed=/(\.xml|\/feed\/?$|\/rss\/?$|rss=|feed=)/i.test(u);
+      src={id:'s'+Date.now(), k:kat, name, kind:feed?'feed':'site', url:u, on:true};
+    }
+    S.sources.push(src); save(); renderSources(); dlg.close(); toast('Quelle hinzugefügt, wird gelesen');
+    src.status='load'; renderSources();
+    try{
+      const items=await leseQuelle(src);
+      items.forEach(it=>{ it.source=src.name; it.sourceId=src.id; it.id=(it.link||it.title).slice(0,220); ARTICLES.push(bewerte(it)); });
+      src.count=items.length; src.status=items.length?'ok':'empty';
+    }catch(err){ src.status='err'; src.err=err.message; }
+    save(); renderSources(); render();
+  }
+});
+
+document.getElementById('cfg').addEventListener('click',()=>{
+  dlgBody.innerHTML=`<h3>Einstellungen</h3>
+    <p>Ab welchem Wert ein Fundstück als Stoff markiert wird. Niedriger heißt großzügiger.</p>
+    <label class="chk" style="gap:14px">Schwelle <input type="range" min="15" max="70" value="${S.prefs.schwelle}" id="thr" style="flex:1"> <b id="thrV">${S.prefs.schwelle}</b></label>
+    <p class="hint" style="margin-top:14px">So ordnet das Programm ein: <b>Termin steht fest</b>, wenn im Text ein künftiges Datum vorkommt. <b>Vorhaben</b> bei Wörtern wie geplant, entsteht, startet. <b>Langzeitthema</b> bei Dauer und Entwicklung. <b>Tagesaktuelles</b> bei Unfällen, Spielberichten und Vergangenheitsformen — das ist voreingestellt ausgeblendet.</p>
+    <div class="foot"><button class="btn pri" data-close>Fertig</button></div>`;
+  dlgBody.querySelector('#thr').addEventListener('input',e=>{
+    S.prefs.schwelle=+e.target.value; dlgBody.querySelector('#thrV').textContent=e.target.value;
+    ARTICLES.forEach(bewerte); save(); render();
+  });
+  dlg.showModal();
+});
+
+document.getElementById('copy').addEventListener('click',async()=>{
+  const ids=Object.keys(S.saved), arr=ARTICLES.filter(a=>ids.includes(a.id));
+  if(!arr.length){ toast('Merkliste ist leer'); return; }
+  const md=arr.map(a=>'## '+a.title+'\n'+(a.when?'Termin: '+a.when.label+'\n':'')+(a.outlet||a.source)+'\n'+a.link+
+    (a.desc?'\n\n'+a.desc:'')+(S.notes[a.id]?'\n\nNotiz: '+S.notes[a.id]:'')).join('\n\n---\n\n');
+  try{ await navigator.clipboard.writeText(md); toast(arr.length+' Einträge kopiert'); }
+  catch(e){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([md],{type:'text/markdown'})); a.download='merkliste.md'; a.click(); }
+});
+document.getElementById('exp').addEventListener('click',()=>{
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify({...S,letzte:null},null,2)],{type:'application/json'}));
+  a.download='stoffradar-sicherung.json'; a.click();
+});
+document.getElementById('imp').addEventListener('click',()=>document.getElementById('file').click());
+document.getElementById('file').addEventListener('change',async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  try{ const d=JSON.parse(await f.text()); S={...S,...d,prefs:{...S.prefs,...(d.prefs||{})}};
+    S.sources.forEach(s=>{s.status='idle';s.count=0}); save(); start(true); toast('Einstellungen geladen'); }
+  catch(err){ toast('Datei nicht lesbar'); }
+});
+
+/* --- Start -------------------------------------------------------------- */
+function start(neu){
+  document.getElementById('radar').value=(S.prefs.radar||[]).join('\n');
+  document.getElementById('sort').value=S.prefs.sort;
+  ['hideDaily','group','hideRead'].forEach(id=>document.getElementById(id).checked=!!S.prefs[id]);
+  document.querySelectorAll('#modeSeg button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.mode===S.prefs.mode));
+  renderSources();
+
+  // letzten Stand sofort zeigen, damit die Seite nie leer startet
+  if(!neu && S.letzte && Array.isArray(S.letzte.items) && S.letzte.items.length){
+    ARTICLES=S.letzte.items.map(bewerte);
+    S.lastRun=S.letzte.zeit;
+    document.getElementById('loader').innerHTML=
+      '<div class="loader"><div class="note-line">Stand von '+new Date(S.letzte.zeit).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})+
+      '. <button class="btn s" id="jetzt" style="margin-left:6px">Jetzt neu lesen</button></div></div>';
+    const j=document.getElementById('jetzt'); if(j) j.addEventListener('click',lauf);
+  }
+  render();
+}
+load(); start(false);
+</script>
+</body>
+</html>
