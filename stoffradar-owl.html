@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Stoffradar">
+<meta name="theme-color" content="#F1F2F0">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAACAElEQVR4nO3dsQ1BURSAYcQICo3OBEZQKsSoolAawQSGsYC/kNx4L/J9A5yc4s/p3n3LzXa3gE9WUy/AfImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA7Seuy40/kyduA/ud+uU6/wHZeDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA7ScrPdTb0DM+VykMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHKTB75C+HoexA/nW/vgcNcrlIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImD5L+yJJeDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIA1++/x0vowdODf323XqFX7H5SCJgyQOkjhI4iCJgyQOkjhI4iCJg+S7FZLLQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDe+f4LjyCTFBYAAAAASUVORK5CYII=">
+<title>Stoffradar OWL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F1F2F0; --card:#FBFBFA; --ink:#14181D; --ink-soft:#4A5158; --muted:#767D84;
+  --rule:#DCDEDA; --rule-strong:#C3C6C1;
+  --petrol:#1B4E63; --petrol-soft:#E3EDF1;
+  --marker:#F0D64F; --marker-band:rgba(240,214,79,.55);
+  --warn:#8C3A2B; --ok:#3C6B4A;
+  --radius:3px;
+  --sans:'Inter Tight','Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --serif:'Source Serif 4',Georgia,'Times New Roman',serif;
+  color-scheme:light dark;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#15181B; --card:#1B1F23; --ink:#E9EAE6; --ink-soft:#B4BAC0; --muted:#8A9198;
+    --rule:#2A2F34; --rule-strong:#3A4046;
+    --petrol:#8FC2D6; --petrol-soft:#1D2C34;
+    --marker:#D8BE3C; --marker-band:rgba(216,190,60,.30);
+    --warn:#D98E7E; --ok:#8CC49C;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{padding-bottom:env(safe-area-inset-bottom,0px)}
+.top{padding-top:env(safe-area-inset-top,0px)}
+body{
+  background:var(--paper); color:var(--ink); font-family:var(--sans);
+  font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--petrol)}
+:focus-visible{outline:2px solid var(--petrol);outline-offset:2px}
+
+/* ---------- Kopfleiste ---------- */
+.top{
+  position:sticky;top:0;z-index:30;background:var(--paper);
+  border-bottom:1px solid var(--rule-strong);
+}
+.top-in{max-width:1220px;margin:0 auto;padding:14px 20px;display:flex;gap:18px;align-items:baseline;flex-wrap:wrap}
+.brand{font-family:var(--serif);font-size:21px;font-weight:600;letter-spacing:-.01em;margin:0}
+.brand span{
+  background:linear-gradient(transparent 58%, var(--marker-band) 58%, var(--marker-band) 92%, transparent 92%);
+  padding:0 2px;
+}
+.tally{color:var(--ink-soft);font-size:13.5px;margin-left:auto;display:flex;gap:14px;flex-wrap:wrap;align-items:baseline}
+.tally b{font-weight:600;color:var(--ink)}
+.top-actions{display:flex;gap:8px;align-items:center}
+.btn{
+  background:var(--card);border:1px solid var(--rule-strong);border-radius:var(--radius);
+  padding:7px 12px;cursor:pointer;font-size:13.5px;font-weight:500;
+}
+.btn:hover{border-color:var(--petrol)}
+.btn.primary{background:var(--petrol);border-color:var(--petrol);color:#fff}
+@media (prefers-color-scheme:dark){.btn.primary{color:#0F1417}}
+.btn.primary:hover{opacity:.9}
+.btn[disabled]{opacity:.55;cursor:default}
+.btn.small{padding:4px 9px;font-size:12.5px}
+
+/* ---------- Grundlayout ---------- */
+.wrap{max-width:1220px;margin:0 auto;padding:22px 20px 80px;display:grid;grid-template-columns:288px 1fr;gap:34px;align-items:start}
+@media (max-width:900px){
+  .wrap{grid-template-columns:1fr;gap:0;padding:14px 14px 70px}
+  .rail{display:none;margin-bottom:22px}
+  .rail.open{display:block}
+}
+.rail{position:sticky;top:64px}
+@media (max-width:900px){.rail{position:static}}
+.panel{border-top:1px solid var(--rule-strong);padding:14px 0}
+.panel:first-child{border-top:none;padding-top:4px}
+.panel h2{font-size:12.5px;font-weight:600;color:var(--ink-soft);margin:0 0 10px;letter-spacing:.01em}
+.field{width:100%;background:var(--card);border:1px solid var(--rule-strong);border-radius:var(--radius);padding:7px 9px}
+.row{display:flex;gap:8px;align-items:center}
+.row + .row{margin-top:7px}
+.chipset{display:flex;flex-wrap:wrap;gap:6px}
+.chip{
+  background:transparent;border:1px solid var(--rule-strong);border-radius:999px;
+  padding:4px 11px;font-size:12.5px;cursor:pointer;color:var(--ink-soft)
+}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.toggle{display:flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer;padding:3px 0}
+.toggle input{accent-color:var(--petrol);width:15px;height:15px}
+
+/* Quellenliste */
+.src{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px dotted var(--rule)}
+.src:last-of-type{border-bottom:none}
+.src-name{flex:1;min-width:0;font-size:13.5px;line-height:1.3}
+.src-name small{display:block;color:var(--muted);font-size:11.5px;margin-top:2px;word-break:break-all}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--rule-strong);margin-top:6px;flex:none}
+.dot.ok{background:var(--ok)} .dot.err{background:var(--warn)} .dot.load{background:var(--marker)}
+.x{background:none;border:none;color:var(--muted);cursor:pointer;padding:2px 4px;font-size:15px;line-height:1}
+.x:hover{color:var(--warn)}
+
+/* ---------- Artikelliste ---------- */
+.listhead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 6px}
+.listhead h2{font-family:var(--serif);font-size:18px;font-weight:600;margin:0}
+.listhead .sortsel{margin-left:auto}
+.art{padding:16px 0 15px;border-bottom:1px solid var(--rule)}
+.art.pick{
+  background:var(--card);margin:0 -14px;padding-left:14px;padding-right:14px;
+  border-left:3px solid var(--marker);border-bottom-color:var(--rule-strong)
+}
+.art.read .art-title a{color:var(--muted)}
+.art-meta{display:flex;gap:9px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:5px}
+.src-tag{color:var(--ink-soft);font-weight:500}
+.new{color:var(--petrol);font-weight:600}
+.art-title{font-family:var(--serif);font-size:18.5px;line-height:1.32;margin:0 0 5px;font-weight:600}
+.art-title a{color:var(--ink);text-decoration:none}
+.art-title a:hover{text-decoration:underline;text-underline-offset:3px}
+.art.pick .art-title a{
+  background:linear-gradient(transparent 62%, var(--marker-band) 62%, var(--marker-band) 95%, transparent 95%);
+}
+.art-text{color:var(--ink-soft);font-size:14px;margin:0 0 9px;max-width:66ch}
+.sig{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
+.sig i{
+  font-style:normal;font-size:11.5px;color:var(--ink-soft);
+  border:1px solid var(--rule-strong);border-radius:2px;padding:2px 7px;background:var(--paper)
+}
+.sig i.score{border-color:var(--marker);background:var(--marker-band);color:var(--ink)}
+.art-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.note{width:100%;max-width:66ch;margin-top:9px;min-height:54px;resize:vertical}
+.dupe{font-size:12px;color:var(--muted);margin-top:6px}
+.empty{padding:44px 0;color:var(--muted);max-width:52ch}
+.empty h3{font-family:var(--serif);font-weight:600;font-size:17px;color:var(--ink);margin:0 0 6px}
+
+/* Ladebalken */
+.bar{height:2px;background:var(--rule);overflow:hidden}
+.bar div{height:100%;width:0;background:var(--petrol);transition:width .25s}
+
+/* Dialog */
+dialog{
+  border:1px solid var(--rule-strong);border-radius:var(--radius);background:var(--card);color:var(--ink);
+  padding:0;width:min(560px,92vw)
+}
+dialog::backdrop{background:rgba(10,14,18,.45)}
+.dlg-in{padding:20px}
+.dlg-in h3{font-family:var(--serif);font-size:19px;margin:0 0 4px;font-weight:600}
+.dlg-in p{color:var(--ink-soft);font-size:13.5px;margin:0 0 14px;max-width:60ch}
+.dlg-foot{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.tabbar{display:flex;gap:4px;border-bottom:1px solid var(--rule);margin-bottom:14px}
+.tabbar button{background:none;border:none;border-bottom:2px solid transparent;padding:7px 10px;cursor:pointer;font-size:13.5px;color:var(--muted)}
+.tabbar button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink);font-weight:500}
+.hint{font-size:12.5px;color:var(--muted);margin-top:6px}
+.status{
+  border:1px solid var(--rule-strong);border-left:3px solid var(--petrol);border-radius:var(--radius);
+  background:var(--card);padding:10px 13px;margin-bottom:16px;font-size:13.5px;color:var(--ink-soft)
+}
+.status.bad{border-left-color:var(--warn)}
+.status b{color:var(--ink);font-weight:600}
+.status .row{margin-top:9px}
+.status ul{margin:8px 0 0;padding-left:18px}
+.status li{margin:2px 0}
+.mobilebar{display:none}
+@media (max-width:900px){
+  .mobilebar{display:flex;gap:8px;margin-bottom:14px}
+  .tally{width:100%;margin-left:0}
+}
+.toast{
+  position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
+  background:var(--ink);color:var(--paper);padding:9px 16px;border-radius:var(--radius);
+  font-size:13.5px;z-index:60;opacity:0;pointer-events:none;transition:opacity .2s
+}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <h1 class="brand">Stoff<span>radar</span> OWL</h1>
+    <div class="top-actions">
+      <button class="btn primary" id="refresh">Quellen abrufen</button>
+      <button class="btn" id="openSettings">Einstellungen</button>
+    </div>
+    <div class="tally" id="tally"></div>
+  </div>
+  <div class="bar"><div id="progress"></div></div>
+</header>
+
+<div class="wrap">
+  <aside class="rail" id="rail">
+    <section class="panel">
+      <h2>Zeitraum</h2>
+      <div class="chipset" id="rangeChips">
+        <button class="chip" data-range="1">24 Stunden</button>
+        <button class="chip" data-range="3">3 Tage</button>
+        <button class="chip" data-range="7">7 Tage</button>
+        <button class="chip" data-range="30">30 Tage</button>
+        <button class="chip" data-range="0">alles</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Ansicht</h2>
+      <label class="toggle"><input type="checkbox" id="onlyPicks"> Nur markierte Stoffe</label>
+      <label class="toggle"><input type="checkbox" id="onlySaved"> Nur meine Merkliste</label>
+      <label class="toggle"><input type="checkbox" id="hideRead"> Gelesene ausblenden</label>
+      <label class="toggle"><input type="checkbox" id="groupDupes" checked> Doppelmeldungen bündeln</label>
+    </section>
+
+    <section class="panel">
+      <h2>Themenradar</h2>
+      <p class="hint" style="margin:0 0 8px">Eigene Stichwörter, die einen Beitrag immer nach oben holen — ein Wort pro Zeile.</p>
+      <textarea class="field" id="radarWords" rows="4" placeholder="Kunsthalle&#10;Bethel&#10;Leerstand"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button class="btn small" id="saveRadar">Radar speichern</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Quellen</h2>
+      <div id="srcList"></div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn small" id="addSource">Quelle hinzufügen</button>
+        <button class="btn small" id="resetSources">Standard</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Sicherung</h2>
+      <div class="row">
+        <button class="btn small" id="exportCfg">Einstellungen sichern</button>
+        <button class="btn small" id="importCfg">Laden</button>
+      </div>
+      <p class="hint">Quellen, Merkliste und Notizen liegen nur in diesem Browser.</p>
+    </section>
+  </aside>
+
+  <main>
+    <div class="mobilebar">
+      <button class="btn" id="toggleRail">Filter &amp; Quellen</button>
+      <button class="btn" id="mobRefresh">Abrufen</button>
+    </div>
+
+    <div id="status" class="status" hidden></div>
+
+    <div class="listhead">
+      <h2 id="listTitle">Beiträge</h2>
+      <input class="field" id="search" placeholder="Im Titel und Text suchen" style="width:auto;flex:1;min-width:160px;max-width:280px">
+      <select class="field sortsel" id="sort" style="width:auto">
+        <option value="date">Neueste zuerst</option>
+        <option value="score">Stoffpotenzial zuerst</option>
+        <option value="source">Nach Quelle</option>
+      </select>
+      <button class="btn small" id="copyPicks">Merkliste kopieren</button>
+    </div>
+
+    <div id="list"></div>
+  </main>
+</div>
+
+<dialog id="dlg"><div class="dlg-in" id="dlgBody"></div></dialog>
+<div class="toast" id="toast"></div>
+<input type="file" id="fileIn" accept="application/json" hidden>
+
+<script>
+/* =========================================================================
+   Stoffradar OWL — läuft vollständig lokal im Browser.
+   Feeds werden über öffentliche CORS-Weiterleitungen geholt, weil Browser
+   fremde Seiten sonst nicht direkt lesen dürfen.
+   ========================================================================= */
+
+const GN = q => 'https://news.google.com/rss/search?q=' + encodeURIComponent(q) + '&hl=de&gl=DE&ceid=DE%3Ade';
+
+/* --- Standardquellen ---------------------------------------------------- */
+/* kind:'feed'  = feste Feed-Adresse
+   kind:'site'  = Website; der Feed wird beim ersten Abruf automatisch gesucht */
+const DEFAULT_SOURCES = [
+  {id:'gn-bi',    name:'Bielefeld (Nachrichtensuche)',        kind:'feed', url:GN('Bielefeld when:14d'), on:true},
+  {id:'gn-owl',   name:'Ostwestfalen-Lippe (Nachrichtensuche)',kind:'feed', url:GN('"Ostwestfalen-Lippe" OR OWL when:14d'), on:true},
+  {id:'gn-kultur',name:'Kultur in Bielefeld',                  kind:'feed', url:GN('Bielefeld (Kultur OR Theater OR Ausstellung OR Festival) when:14d'), on:true},
+  {id:'gn-menschen',name:'Menschen und Vereine in OWL',      kind:'feed', url:GN('(Bielefeld OR Herford OR Gütersloh) (Verein OR Ehrenamt OR Initiative OR Porträt) when:14d'), on:true},
+  {id:'nw',       name:'Neue Westfälische',                    kind:'site', url:'https://www.nw.de/', on:true},
+  {id:'wb',       name:'Westfalen-Blatt',                      kind:'site', url:'https://www.westfalen-blatt.de/', on:true},
+  {id:'radiobi',  name:'Radio Bielefeld',                      kind:'site', url:'https://www.radiobielefeld.de/', on:true},
+  {id:'stadt',    name:'Stadt Bielefeld (Presse)',             kind:'site', url:'https://www.bielefeld.de/', on:true},
+  {id:'unibi',    name:'Universität Bielefeld',                kind:'site', url:'https://aktuell.uni-bielefeld.de/', on:true},
+  {id:'hsbi',     name:'HSBI Bielefeld',                       kind:'site', url:'https://www.hsbi.de/', on:false},
+  {id:'bethel',   name:'v. Bodelschwinghsche Stiftungen Bethel',kind:'site', url:'https://www.bethel.de/', on:false},
+  {id:'gn-wdrowl',name:'WDR über OWL',                         kind:'feed', url:GN('WDR (Bielefeld OR "Ostwestfalen-Lippe") when:14d'), on:false},
+  {id:'gn-blaulicht',name:'Polizei und Feuerwehr Bielefeld',  kind:'feed', url:GN('(Polizei OR Feuerwehr) Bielefeld when:7d'), on:false},
+  {id:'gn-umland',name:'Umland: Herford, Gütersloh, Lippe',    kind:'feed', url:GN('(Herford OR Gütersloh OR Detmold OR "Kreis Lippe") when:14d'), on:false}
+];
+
+/* --- Bewertung: Was taugt als Film- oder Radiostoff? -------------------- */
+const SIGNALS = [
+  {tag:'Protagonist', w:16, words:['porträt','portrait','erzählt','erinnert sich','zeitzeug','überlebende','seit jahren','sein leben','ihr leben','ehrenamtlich','gründer','gründerin','meisterin','der letzte','die letzte','das letzte','als einzige','als erster','als erste','widmet sich','kämpft','traum','berufung','schicksal','familie','ehepaar','geschwister','nachbarn','anwohner','wirtin','pfarrer','pflegerin','pfleger','rentner','betroffene','freiwillige','gibt auf','macht schluss','verabschiedet sich']},
+  {tag:'Konflikt', w:18, words:['streit','gestritten','protest','widerstand','bürgerinitiative','bürgerbegehren','klage','prozess','gericht','kritik','umstritten','demonstration','besetzt','räumung','petition','vorwurf','vorwürfe','skandal','ärger um','auseinandersetzung','empört','wehren sich','debatte','clinch','beschwerde','einspruch','abgelehnt','gescheitert','verzögert','blockiert','eskaliert','untersagt','verbot','boykott','infrage gestellt','angegriffen','im clinch']},
+  {tag:'Wandel', w:18, words:['abriss','umbau','umgebaut','sanierung','saniert','eröffnet','eröffnung','wiedereröffn','schließt','schließung','macht dicht','aus für','ausverkauf','letzter tag','insolvenz','neubau','erweiterungsbau','umzug','zieht um','renaturierung','wiederaufbau','letzte schicht','übernimmt','nachfolge','verkauft','gerettet','comeback','neustart','erstmals','fertiggestellt']},
+  {tag:'Arbeit und Geld', w:15, words:['stellenabbau','stellen ab','arbeitsplätze','kündigung','entlassung','sparkurs','sparprogramm','insolvent','tarif','streik','gebühren','defizit','haushaltsloch','fachkräftemangel','ausbildungsplätze','millionen euro','fördermittel','subvention','mieten','mietpreis']},
+  {tag:'Schauplatz', w:12, words:['werkstatt','atelier','bühne','tierheim','tierpark','bauernhof','hofladen','wald','keller','bunker','turm','brauerei','bahn','gleisbett','markt','kirche','kloster','friedhof','labor','studio','chor','orchester','festival','schwimmbad','freibad','kleingarten','museum','bibliothek','volkshochschule','werkhalle','fabrik','mühle','fachwerk','stadtteil']},
+  {tag:'Ungewöhnlich', w:17, words:['kurios','einzigartig','rekord','weltweit','geheim','rätsel','verschwunden','wiederentdeckt','mysteriös','skurril','ausgerechnet','kaum zu glauben','sammlung','sammelt','erfindet','erfindung','experiment','älteste','größte','kleinste','ungewöhnlich','seltsam','zum ersten mal']},
+  {tag:'Gesellschaft', w:13, words:['armut','wohnungsnot','obdachlos','pflege','demenz','inklusion','integration','geflüchtete','einsamkeit','jugendliche','senior','schule','kita','ärztemangel','klimaschutz','hochwasser','artensterben','leerstand','innenstadt','suchthilfe','teilhabe','ehrenamt','prävention','barrierefrei','teilhaben']},
+  {tag:'Region', w:8, words:['bielefeld','sennestadt','brackwede','schildesche','heepen','jöllenbeck','stieghorst','dornberg','gadderbaum','senne','sparrenburg','teutoburger','hermannsweg','oetker','bethel','schüco','owl','ostwestfalen','obersee','johannisberg','ravensberger','olderdissen']}
+];
+/* Zeitspannen und Jubiläen sprechen für eine Geschichte mit Vorgeschichte */
+const SPAN = {tag:'Lange Geschichte', w:12, res:[
+  /\b(seit|nach|vor)\s+(vielen|mehreren|über\s*\d+|\d{1,3})\s+jahren\b/i,
+  /\b\d{1,3}\s*jahre[n]?\s+(alt|lang|später|nach)\b/i,
+  /\bzum\s+\d{1,3}\.\s*mal\b/i,
+  /\bjubiläum\b/i,
+  /\bseit\s+(19|20)\d{2}\b/i,
+  /\b(19|20)\d{2}\s+gegründet\b/i
+]};
+/* klar ungeeignet */
+const DAMPEN = ['spielbericht','einzelkritik','spieltag','tabellenplatz','transfergerücht','wechselgerücht','aufstellung','blitzer','verkehrslage','lottozahlen','so wird das wetter','wetterbericht','aktienkurs','gewinnspiel','anzeige:','werbung','rabatt','prozent sparen','horoskop','tv-tipps','fernsehprogramm'];
+/* Routinemeldungen: selten ein Stoff, aber nicht ausgeschlossen */
+const ROUTINE = ['unfall','zusammenstoß','leicht verletzt','schwer verletzt','einbrecher','eingebrochen','diebstahl','gestohlen','tatverdächtig','zeugen gesucht','streifenwagen','festgenommen','fällt aus','anmeldung läuft','öffnungszeiten','sprechstunde','vollsperrung','umleitung','baustelle'];
+
+function score(a){
+  const hay=(a.title+' '+(a.desc||'')).toLowerCase();
+  let s=0; const tags=[];
+  for(const g of SIGNALS){
+    let hit=0;
+    for(const w of g.words){ if(hay.includes(w)){ hit++; if(hit>=2) break; } }
+    if(hit){ s += g.w + (hit>1?4:0); tags.push(g.tag); }
+  }
+  if(SPAN.res.some(r=>r.test(hay))){ s+=SPAN.w; tags.push(SPAN.tag); }
+  if(DAMPEN.some(d=>hay.includes(d))) s-=30;
+  if(ROUTINE.some(d=>hay.includes(d))) s-=13;
+  if((a.desc||'').length>150) s+=4;
+  const radar=(S.prefs.radar||[]);
+  let radarHit=null;
+  for(const w of radar){ const lw=w.toLowerCase().trim(); if(lw && hay.includes(lw)){ radarHit=w; s+=40; break; } }
+  if(radarHit) tags.unshift('Radar: '+radarHit);
+  a.score=Math.max(0,Math.min(100,Math.round(s)));
+  a.tags=tags;
+  a.pick = a.score>=S.prefs.threshold;
+  return a;
+}
+
+/* --- Zustand ------------------------------------------------------------ */
+const LS='stoffradar.v1';
+let S = {
+  sources:null, prefs:{range:7, onlyPicks:false, onlySaved:false, hideRead:false, group:true, sort:'date', radar:[], threshold:30},
+  saved:{}, read:{}, notes:{}, lastVisit:0, feedCache:{}
+};
+let ARTICLES=[], BUSY=false;
+
+function load(){
+  try{
+    const raw=localStorage.getItem(LS);
+    if(raw){ const d=JSON.parse(raw); S={...S,...d, prefs:{...S.prefs,...(d.prefs||{})}}; }
+  }catch(e){ console.warn('Kein lokaler Speicher verfügbar', e); }
+  if(!Array.isArray(S.sources)||!S.sources.length) S.sources=JSON.parse(JSON.stringify(DEFAULT_SOURCES));
+  S.sources.forEach(s=>{ s.status='idle'; s.count=0; });
+}
+function save(){
+  try{
+    const out={...S, sources:S.sources.map(({status,count,...r})=>r)};
+    localStorage.setItem(LS, JSON.stringify(out));
+  }catch(e){ /* z. B. privater Modus – Daten bleiben nur für diese Sitzung */ }
+}
+
+/* --- Netzwerk ----------------------------------------------------------- */
+const PROXIES=[
+  u=>u,
+  u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u),
+  u=>'https://corsproxy.io/?url='+encodeURIComponent(u),
+  u=>'https://api.codetabs.com/v1/proxy/?quest='+encodeURIComponent(u),
+  u=>'https://api.allorigins.win/raw?charset=UTF-8&url='+encodeURIComponent(u)
+];
+async function grab(url, ms=17000){
+  let lastErr;
+  const order = S.feedCache.pi!=null ? [S.feedCache.pi,...PROXIES.keys()].filter((v,i,a)=>a.indexOf(v)===i) : [...PROXIES.keys()];
+  for(const i of order){
+    const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(), ms);
+    try{
+      const r=await fetch(PROXIES[i](url),{signal:ctrl.signal,redirect:'follow'});
+      clearTimeout(t);
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      const txt=await r.text();
+      if(txt && txt.length>120){ if(i>0) S.feedCache.pi=i; return txt; }
+      throw new Error('leere Antwort');
+    }catch(e){ clearTimeout(t); lastErr=e; }
+  }
+  throw lastErr||new Error('nicht erreichbar');
+}
+
+/* --- Feed finden -------------------------------------------------------- */
+const CANDIDATES=['/feed','/feed/','/rss','/rss.xml','/feed.xml','/index.xml','/atom.xml','/?feed=rss2','/news/feed','/aktuelles/feed','/de/rss','/rss/news.xml','/presse/rss'];
+function abs(base,href){ try{ return new URL(href, base).href; }catch(e){ return null; } }
+
+async function findFeed(site){
+  let html;
+  try{ html=await grab(site, 15000); }catch(e){ html=''; }
+  if(html){
+    const doc=new DOMParser().parseFromString(html,'text/html');
+    const links=[...doc.querySelectorAll('link[rel~="alternate"]')]
+      .filter(l=>/rss|atom|xml/i.test(l.getAttribute('type')||''))
+      .map(l=>abs(site,l.getAttribute('href'))).filter(Boolean);
+    const anchors=[...doc.querySelectorAll('a[href]')]
+      .map(a=>a.getAttribute('href'))
+      .filter(h=>/(\/feed\/?$|rss|\.xml$)/i.test(h))
+      .map(h=>abs(site,h)).filter(Boolean);
+    for(const cand of [...new Set([...links,...anchors])].slice(0,6)){
+      const items=await tryParse(cand);
+      if(items && items.length) return {url:cand, items};
+    }
+  }
+  for(const p of CANDIDATES){
+    const cand=abs(site,p); if(!cand) continue;
+    const items=await tryParse(cand);
+    if(items && items.length) return {url:cand, items};
+  }
+  return null;
+}
+async function tryParse(url){
+  try{ const xml=await grab(url, 13000); const it=parseFeed(xml); return it.length?it:null; }
+  catch(e){ return null; }
+}
+
+/* --- Feed auswerten ----------------------------------------------------- */
+function txt(node,sel){ const n=node.querySelector(sel); return n? (n.textContent||'').trim() : ''; }
+function stripHtml(s){
+  if(!s) return '';
+  const d=document.createElement('div'); d.innerHTML=s;
+  return (d.textContent||'').replace(/\s+/g,' ').trim();
+}
+function parseFeed(xmlText){
+  const doc=new DOMParser().parseFromString(xmlText.replace(/^\uFEFF/,''),'text/xml');
+  if(doc.querySelector('parsererror')) return [];
+  const nodes=[...doc.querySelectorAll('item'), ...doc.querySelectorAll('entry')];
+  const out=[];
+  for(const n of nodes){
+    let title=stripHtml(txt(n,'title'));
+    if(!title) continue;
+    let link='';
+    const lk=n.querySelector('link');
+    if(lk) link=(lk.getAttribute('href')||lk.textContent||'').trim();
+    if(!link) link=txt(n,'guid');
+    let desc=stripHtml(txt(n,'description')||txt(n,'summary')||txt(n,'content'));
+    const dateStr=txt(n,'pubDate')||txt(n,'published')||txt(n,'updated')||txt(n,'date')||'';
+    let ts=Date.parse(dateStr); if(isNaN(ts)) ts=0;
+    let outlet='';
+    const m=title.match(/\s[-–—]\s([^-–—]{2,42})$/);
+    if(m && /news\.google/.test(link)){ outlet=m[1].trim(); title=title.slice(0, m.index).trim(); }
+    if(!outlet) outlet=stripHtml(txt(n,'source'));
+    if(/news\.google/.test(link) && desc) desc=desc.replace(/\s*(Vollständige Berichterstattung|View Full Coverage).*$/i,'');
+    out.push({title, link, desc:desc.slice(0,340), ts, outlet});
+  }
+  return out;
+}
+
+/* --- Bewerten ----------------------------------------------------------- */
+function score(a){
+  const hay=(a.title+' '+a.desc).toLowerCase();
+  let s=0; const tags=[];
+  for(const g of SIGNALS){
+    let hit=0;
+    for(const w of g.words){ if(hay.includes(w)){ hit++; if(hit>=2) break; } }
+    if(hit){ s += g.w + (hit>1?4:0); tags.push(g.tag); }
+  }
+  for(const d of DAMPEN){ if(hay.includes(d)){ s-=22; break; } }
+  if(a.desc.length>140) s+=5;
+  if(a.title.length>95) s-=4;
+  const radar=(S.prefs.radar||[]);
+  let radarHit=null;
+  for(const w of radar){ const lw=w.toLowerCase().trim(); if(lw && hay.includes(lw)){ radarHit=w; s+=40; break; } }
+  if(radarHit) tags.unshift('Radar: '+radarHit);
+  a.score=Math.max(0,Math.min(100,Math.round(s)));
+  a.tags=tags;
+  a.pick = a.score>=S.prefs.threshold;
+  return a;
+}
+
+/* --- Sichtbare Rückmeldung ---------------------------------------------- */
+function setStatus(html, bad){
+  const el=document.getElementById('status');
+  if(!html){ el.hidden=true; el.innerHTML=''; return; }
+  el.hidden=false; el.className='status'+(bad?' bad':''); el.innerHTML=html;
+}
+
+async function diagnose(){
+  setStatus('<b>Verbindung wird geprüft…</b>');
+  const test='https://news.google.com/rss/search?q=Bielefeld&hl=de&gl=DE&ceid=DE%3Ade';
+  const names=['Direktzugriff','allorigins.win','corsproxy.io','codetabs.com','allorigins (UTF-8)'];
+  const lines=[];
+  let any=false;
+  for(let i=0;i<PROXIES.length;i++){
+    let ok=false, msg='';
+    const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),12000);
+    try{
+      const r=await fetch(PROXIES[i](test),{signal:ctrl.signal});
+      const txt=await r.text();
+      ok = r.ok && /<(item|entry)[\s>]/i.test(txt);
+      msg = ok ? 'erreichbar' : ('Antwort unbrauchbar (HTTP '+r.status+')');
+    }catch(e){ msg=(e&&e.name==='AbortError')?'Zeitüberschreitung':(e.message||'blockiert'); }
+    clearTimeout(t);
+    if(ok){ any=true; S.feedCache.pi=i; }
+    lines.push('<li>'+names[i]+': '+(ok?'<b>erreichbar</b>':msg)+'</li>');
+  }
+  if(any){
+    setStatus('<b>Verbindung steht.</b> Der Abruf sollte jetzt funktionieren.<ul>'+lines.join('')+'</ul>'+
+      '<div class="row"><button class="btn small" id="stRetry">Erneut abrufen</button></div>');
+  }else{
+    setStatus('<b>Kein Zugriff auf das Internet aus dieser Seite heraus.</b> '+
+      'Das passiert, wenn die Datei in einer Vorschau innerhalb einer App geöffnet ist — dort dürfen Seiten keine fremden Adressen laden. '+
+      'Abhilfe: Datei herunterladen, im Dateimanager speichern und direkt mit Firefox, Chrome oder Safari öffnen. Am besten auf einem Rechner.'+
+      '<ul>'+lines.join('')+'</ul>', true);
+  }
+  const rt=document.getElementById('stRetry'); if(rt) rt.addEventListener('click',refresh);
+}
+async function refresh(){
+  if(BUSY) return; BUSY=true;
+  const rBtn=document.getElementById('refresh');
+  rBtn.disabled=true; rBtn.textContent='Wird abgerufen…';
+  const active=S.sources.filter(s=>s.on);
+  let done=0;
+  const prog=document.getElementById('progress');
+  prog.style.width='2%';
+  ARTICLES=[];
+
+  const queue=[...active];
+  const worker=async()=>{
+    while(queue.length){
+      const src=queue.shift();
+      src.status='load'; renderSources();
+      try{
+        let items=null;
+        if(src.kind==='site'){
+          const cached=S.feedCache[src.id];
+          if(cached){ items=await tryParse(cached); }
+          if(!items){
+            const found=await findFeed(src.url);
+            if(found){ S.feedCache[src.id]=found.url; items=found.items; }
+          }
+          if(!items) throw new Error('kein Feed gefunden');
+        }else{
+          const xml=await grab(src.url);
+          items=parseFeed(xml);
+        }
+        items.forEach(it=>{
+          it.source=src.name; it.sourceId=src.id;
+          it.id=(it.link||it.title).slice(0,220);
+          ARTICLES.push(score(it));
+        });
+        src.count=items.length;
+        src.status=items.length?'ok':'empty';
+      }catch(e){
+        src.status='err'; src.err=(e&&e.message)||'Fehler'; src.count=0;
+      }
+      done++;
+      prog.style.width=Math.round(done/active.length*100)+'%';
+      setStatus('<b>'+done+' von '+active.length+' Quellen abgefragt</b> · '+ARTICLES.length+' Beiträge bisher');
+      renderSources();
+    }
+  };
+  await Promise.all([worker(),worker(),worker()]);
+
+  prog.style.width='100%';
+  setTimeout(()=>{prog.style.width='0'},600);
+  rBtn.disabled=false; rBtn.textContent='Quellen abrufen';
+  BUSY=false;
+  S.lastFetch=Date.now(); save();
+  render();
+
+  const bad=active.filter(s=>s.status==='err'), empty=active.filter(s=>s.status==='empty');
+  if(!ARTICLES.length){
+    setStatus('<b>Keine Beiträge empfangen.</b> Alle '+active.length+' Quellen blieben ohne Ergebnis. '+
+      'Meist liegt das daran, dass die Seite keinen Zugriff aufs Netz hat.'+
+      '<div class="row"><button class="btn small" id="stDiag">Verbindung prüfen</button></div>', true);
+  }else if(bad.length||empty.length){
+    setStatus('<b>'+ARTICLES.length+' Beiträge aus '+(active.length-bad.length-empty.length)+' Quellen.</b> '+
+      (bad.length? bad.length+' Quelle(n) nicht erreichbar: '+bad.map(s=>s.name).join(', ')+'. ':'')+
+      (empty.length? empty.length+' ohne Einträge: '+empty.map(s=>s.name).join(', ')+'. ':'')+
+      'Diese lassen sich unter „Quellen“ abschalten oder ersetzen.'+
+      '<div class="row"><button class="btn small" id="stDiag">Verbindung prüfen</button></div>');
+  }else{
+    setStatus('<b>'+ARTICLES.length+' Beiträge</b> aus '+active.length+' Quellen abgerufen.');
+    setTimeout(()=>setStatus(''),6000);
+  }
+  const dg=document.getElementById('stDiag'); if(dg) dg.addEventListener('click',diagnose);
+}
+
+/* --- Doppelmeldungen ---------------------------------------------------- */
+function dupKey(t){
+  const toks=t.toLowerCase().replace(/[^a-zäöüß0-9 ]/g,' ').split(/\s+/).filter(w=>w.length>4);
+  return toks.sort((a,b)=>b.length-a.length).slice(0,4).sort().join('|');
+}
+
+/* --- Darstellung -------------------------------------------------------- */
+function fmt(ts){
+  if(!ts) return 'ohne Datum';
+  const d=new Date(ts), now=Date.now(), diff=(now-ts)/36e5;
+  if(diff<1) return Math.max(1,Math.round(diff*60))+' Min.';
+  if(diff<24) return Math.round(diff)+' Std.';
+  return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+', '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+}
+function visible(){
+  const p=S.prefs, q=(document.getElementById('search').value||'').toLowerCase().trim();
+  const cutoff = p.range? Date.now()-p.range*864e5 : 0;
+  let arr=ARTICLES.filter(a=>{
+    if(cutoff && a.ts && a.ts<cutoff) return false;
+    if(p.onlyPicks && !a.pick && !S.saved[a.id]) return false;
+    if(p.onlySaved && !S.saved[a.id]) return false;
+    if(p.hideRead && S.read[a.id] && !S.saved[a.id]) return false;
+    if(q && !(a.title+' '+a.desc).toLowerCase().includes(q)) return false;
+    return true;
+  });
+  // Doppelmeldungen bündeln: den ausführlichsten Beitrag behalten,
+  // die übrigen Medien darunter nennen
+  arr.forEach(a=>a.also=[]);
+  if(S.prefs.group){
+    const groups=new Map();
+    arr.forEach(a=>{ const k=dupKey(a.title)||a.id; if(!groups.has(k)) groups.set(k,[]); groups.get(k).push(a); });
+    arr=[...groups.values()].map(g=>{
+      g.sort((x,y)=>(y.score-x.score)||(y.desc.length-x.desc.length)||(y.ts-x.ts));
+      const rep=g[0], own=(rep.outlet||rep.source);
+      rep.also=[...new Set(g.map(x=>x.outlet||x.source))].filter(o=>o&&o!==own);
+      return rep;
+    });
+  }
+  const s=p.sort;
+  arr.sort((a,b)=>{
+    if(s==='score') return (b.score-a.score)||(b.ts-a.ts);
+    if(s==='source') return a.source.localeCompare(b.source)||(b.ts-a.ts);
+    return (b.ts-a.ts)||(b.score-a.score);
+  });
+  return arr;
+}
+function esc(s){ return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function render(){
+  const arr=visible(), list=document.getElementById('list');
+  const picks=ARTICLES.filter(a=>a.pick).length, savedN=Object.keys(S.saved).length;
+  document.getElementById('tally').innerHTML =
+    '<span><b>'+ARTICLES.length+'</b> Beiträge</span>'+
+    '<span><b>'+picks+'</b> markiert</span>'+
+    '<span><b>'+savedN+'</b> gemerkt</span>'+
+    (S.lastFetch?'<span>Stand '+new Date(S.lastFetch).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+'</span>':'');
+  document.getElementById('listTitle').textContent = arr.length+' '+(arr.length===1?'Beitrag':'Beiträge');
+
+  if(!arr.length){
+    list.innerHTML='<div class="empty"><h3>'+(ARTICLES.length?'Nichts im gewählten Ausschnitt':'Noch nichts abgerufen')+'</h3><p>'+
+      (ARTICLES.length?'Zeitraum erweitern, Suchbegriff löschen oder Filter zurücknehmen.':'Oben auf „Quellen abrufen“ klicken. Der erste Durchlauf dauert etwas länger, weil die Feed-Adressen der Websites gesucht werden.')+'</p></div>';
+    return;
+  }
+  list.innerHTML = arr.map(a=>{
+    const rd=S.read[a.id], sv=S.saved[a.id], note=S.notes[a.id]||'';
+    const isNew = PREV_VISIT && a.ts>PREV_VISIT;
+    return '<article class="art'+(a.pick?' pick':'')+(rd?' read':'')+'" data-id="'+esc(a.id)+'">'+
+      '<div class="art-meta">'+
+        '<span class="src-tag">'+esc(a.outlet||a.source)+'</span><span>·</span><span>'+fmt(a.ts)+'</span>'+
+        (isNew?'<span class="new">neu</span>':'')+
+      '</div>'+
+      '<h3 class="art-title"><a href="'+esc(a.link)+'" target="_blank" rel="noopener">'+esc(a.title)+'</a></h3>'+
+      (a.desc?'<p class="art-text">'+esc(a.desc)+'</p>':'')+
+      (a.pick?'<div class="sig"><i class="score">Stoffpotenzial '+a.score+'</i>'+a.tags.map(t=>'<i>'+esc(t)+'</i>').join('')+'</div>':'')+
+      (a.also&&a.also.length?'<div class="dupe">Auch gemeldet bei: '+esc(a.also.slice(0,4).join(', '))+'</div>':'')+
+      '<div class="art-actions">'+
+        '<button class="btn small act-save">'+(sv?'★ gemerkt':'☆ merken')+'</button>'+
+        '<button class="btn small act-read">'+(rd?'als ungelesen':'als gelesen')+'</button>'+
+        '<button class="btn small act-note">'+(note?'Notiz bearbeiten':'Notiz')+'</button>'+
+      '</div>'+
+      (note?'<textarea class="field note" data-note>'+esc(note)+'</textarea>':'')+
+    '</article>';
+  }).join('');
+}
+
+function renderSources(){
+  const el=document.getElementById('srcList');
+  el.innerHTML=S.sources.map(s=>{
+    const cls = s.status==='ok'?'ok': s.status==='err'?'err': s.status==='load'?'load':'';
+    const info = s.status==='err' ? (s.err||'nicht erreichbar')
+               : s.status==='empty' ? 'keine Einträge'
+               : s.count ? s.count+' Einträge' : (s.kind==='site'?'Website':'Feed');
+    return '<div class="src" data-sid="'+esc(s.id)+'">'+
+      '<span class="dot '+cls+'"></span>'+
+      '<label class="src-name"><input type="checkbox" class="src-on" '+(s.on?'checked':'')+' style="margin-right:6px;accent-color:var(--petrol)">'+
+        s.name+'<small>'+esc(info)+'</small></label>'+
+      '<button class="x src-del" title="Quelle entfernen">×</button></div>';
+  }).join('');
+}
+
+/* --- Bedienung ---------------------------------------------------------- */
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); }
+
+document.getElementById('list').addEventListener('click',e=>{
+  const art=e.target.closest('.art'); if(!art) return;
+  const id=art.dataset.id;
+  if(e.target.closest('a')){ S.read[id]=1; save(); render(); return; }
+  if(e.target.classList.contains('act-save')){ S.saved[id]?delete S.saved[id]:S.saved[id]=1; save(); render(); }
+  if(e.target.classList.contains('act-read')){ S.read[id]?delete S.read[id]:S.read[id]=1; save(); render(); }
+  if(e.target.classList.contains('act-note')){
+    if(!art.querySelector('[data-note]')){
+      const ta=document.createElement('textarea'); ta.className='field note'; ta.dataset.note='';
+      ta.value=S.notes[id]||''; art.appendChild(ta); ta.focus();
+    } else art.querySelector('[data-note]').focus();
+  }
+});
+document.getElementById('list').addEventListener('input',e=>{
+  if(e.target.matches('[data-note]')){
+    const id=e.target.closest('.art').dataset.id;
+    const v=e.target.value.trim();
+    if(v) S.notes[id]=v; else delete S.notes[id];
+    clearTimeout(window.__nt); window.__nt=setTimeout(save,500);
+  }
+});
+
+document.getElementById('rangeChips').addEventListener('click',e=>{
+  const b=e.target.closest('.chip'); if(!b) return;
+  S.prefs.range=+b.dataset.range; save(); syncChips(); render();
+});
+function syncChips(){
+  document.querySelectorAll('#rangeChips .chip').forEach(c=>c.setAttribute('aria-pressed', +c.dataset.range===S.prefs.range));
+}
+const bind=(id,key)=>{
+  const el=document.getElementById(id); el.checked=!!S.prefs[key];
+  el.addEventListener('change',()=>{ S.prefs[key]=el.checked; save(); render(); });
+};
+document.getElementById('search').addEventListener('input',()=>{ clearTimeout(window.__st); window.__st=setTimeout(render,180); });
+document.getElementById('sort').addEventListener('change',e=>{ S.prefs.sort=e.target.value; save(); render(); });
+
+document.getElementById('srcList').addEventListener('change',e=>{
+  if(e.target.classList.contains('src-on')){
+    const id=e.target.closest('.src').dataset.sid;
+    const s=S.sources.find(x=>x.id===id); s.on=e.target.checked; save();
+  }
+});
+document.getElementById('srcList').addEventListener('click',e=>{
+  if(e.target.classList.contains('src-del')){
+    const id=e.target.closest('.src').dataset.sid;
+    S.sources=S.sources.filter(x=>x.id!==id);
+    ARTICLES=ARTICLES.filter(a=>a.sourceId!==id);
+    save(); renderSources(); render();
+  }
+});
+document.getElementById('resetSources').addEventListener('click',()=>{
+  S.sources=JSON.parse(JSON.stringify(DEFAULT_SOURCES)); S.feedCache={}; save(); renderSources(); toast('Standardquellen wiederhergestellt');
+});
+document.getElementById('saveRadar').addEventListener('click',()=>{
+  S.prefs.radar=document.getElementById('radarWords').value.split('\n').map(w=>w.trim()).filter(Boolean);
+  ARTICLES.forEach(score); save(); render(); toast('Themenradar gespeichert');
+});
+
+/* Quelle hinzufügen */
+const dlg=document.getElementById('dlg'), dlgBody=document.getElementById('dlgBody');
+document.getElementById('addSource').addEventListener('click',()=>{
+  dlgBody.innerHTML=`
+    <h3>Quelle hinzufügen</h3>
+    <div class="tabbar">
+      <button aria-selected="true" data-tab="web">Website oder Feed</button>
+      <button aria-selected="false" data-tab="topic">Thema beobachten</button>
+    </div>
+    <div data-pane="web">
+      <p>Adresse einer Website einfügen — der Feed wird automatisch gesucht. Eine direkte Feed-Adresse funktioniert ebenso.</p>
+      <input class="field" id="nsUrl" placeholder="https://www.beispiel-owl.de">
+      <input class="field" id="nsName" placeholder="Name für die Übersicht (optional)" style="margin-top:8px">
+      <p class="hint">Findet der Browser keinen Feed, meldet die Quelle das in der Seitenleiste.</p>
+    </div>
+    <div data-pane="topic" hidden>
+      <p>Ein Stichwort, das laufend in allen deutschsprachigen Nachrichten verfolgt wird — gut für Personen, Orte oder Vorhaben.</p>
+      <input class="field" id="nsTopic" placeholder="z. B. Kunsthalle Bielefeld">
+    </div>
+    <div class="dlg-foot"><button class="btn" data-close>Abbrechen</button><button class="btn primary" id="nsAdd">Hinzufügen</button></div>`;
+  dlg.showModal();
+});
+dlgBody.addEventListener('click',async e=>{
+  if(e.target.matches('[data-close]')) dlg.close();
+  if(e.target.dataset.tab){
+    dlgBody.querySelectorAll('.tabbar button').forEach(b=>b.setAttribute('aria-selected', b===e.target));
+    dlgBody.querySelectorAll('[data-pane]').forEach(p=>p.hidden = p.dataset.pane!==e.target.dataset.tab);
+  }
+  if(e.target.id==='nsAdd'){
+    const tab=dlgBody.querySelector('.tabbar button[aria-selected="true"]').dataset.tab;
+    let src=null;
+    if(tab==='topic'){
+      const q=dlgBody.querySelector('#nsTopic').value.trim();
+      if(!q) return;
+      src={id:'t'+Date.now(), name:q, kind:'feed', url:GN(q+' when:14d'), on:true};
+    }else{
+      let u=dlgBody.querySelector('#nsUrl').value.trim();
+      if(!u) return;
+      if(!/^https?:\/\//i.test(u)) u='https://'+u;
+      const name=dlgBody.querySelector('#nsName').value.trim() || u.replace(/^https?:\/\/(www\.)?/,'').split('/')[0];
+      const isFeed=/(\.xml|\/feed\/?$|\/rss\/?$|rss=|feed=)/i.test(u);
+      src={id:'s'+Date.now(), name, kind:isFeed?'feed':'site', url:u, on:true};
+    }
+    S.sources.push(src); save(); renderSources(); dlg.close();
+    toast('Quelle hinzugefügt – wird abgerufen');
+    refreshOne(src);
+  }
+});
+async function refreshOne(src){
+  src.status='load'; renderSources();
+  try{
+    let items;
+    if(src.kind==='site'){
+      const f=await findFeed(src.url);
+      if(!f) throw new Error('kein Feed gefunden');
+      S.feedCache[src.id]=f.url; items=f.items;
+    } else items=parseFeed(await grab(src.url));
+    items.forEach(it=>{ it.source=src.name; it.sourceId=src.id; it.id=(it.link||it.title).slice(0,220); ARTICLES.push(score(it)); });
+    src.count=items.length; src.status=items.length?'ok':'empty';
+  }catch(e){ src.status='err'; src.err=e.message; }
+  save(); renderSources(); render();
+}
+
+/* Merkliste kopieren */
+document.getElementById('copyPicks').addEventListener('click',async()=>{
+  const ids=Object.keys(S.saved);
+  const arr=ARTICLES.filter(a=>ids.includes(a.id));
+  if(!arr.length){ toast('Merkliste ist leer'); return; }
+  const md=arr.sort((a,b)=>b.ts-a.ts).map(a=>
+    '## '+a.title+'\n'+(a.outlet||a.source)+', '+(a.ts?new Date(a.ts).toLocaleDateString('de-DE'):'ohne Datum')+
+    '\n'+a.link+(a.desc?'\n\n'+a.desc:'')+(S.notes[a.id]?'\n\nNotiz: '+S.notes[a.id]:'')
+  ).join('\n\n---\n\n');
+  try{ await navigator.clipboard.writeText(md); toast(arr.length+' Beiträge kopiert'); }
+  catch(e){
+    const blob=new Blob([md],{type:'text/markdown'}); const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='merkliste.md'; a.click(); toast('Als Datei gespeichert');
+  }
+});
+
+/* Sicherung */
+document.getElementById('exportCfg').addEventListener('click',()=>{
+  const data=JSON.stringify({...S, sources:S.sources.map(({status,count,err,...r})=>r)},null,2);
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([data],{type:'application/json'}));
+  a.download='stoffradar-einstellungen.json'; a.click();
+});
+document.getElementById('importCfg').addEventListener('click',()=>document.getElementById('fileIn').click());
+document.getElementById('fileIn').addEventListener('change',async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  try{
+    const d=JSON.parse(await f.text());
+    S={...S,...d, prefs:{...S.prefs,...(d.prefs||{})}};
+    S.sources.forEach(s=>{s.status='idle';s.count=0});
+    save(); init(true); toast('Einstellungen geladen');
+  }catch(err){ toast('Datei konnte nicht gelesen werden'); }
+});
+
+/* Einstellungen */
+document.getElementById('openSettings').addEventListener('click',()=>{
+  dlgBody.innerHTML=`
+    <h3>Einstellungen</h3>
+    <p>Ab welchem Wert ein Beitrag als Stoff markiert wird. Niedriger heißt mehr Markierungen.</p>
+    <label class="toggle" style="gap:14px">Schwelle
+      <input type="range" min="20" max="80" value="${S.prefs.threshold}" id="thr" style="flex:1">
+      <b id="thrVal">${S.prefs.threshold}</b></label>
+    <label class="toggle" style="margin-top:12px"><input type="checkbox" id="autoRef" ${S.prefs.auto?'checked':''}> Alle 30 Minuten automatisch abrufen</label>
+    <p class="hint" style="margin-top:14px">Alle Daten bleiben in diesem Browser. Die Feeds werden über einen öffentlichen Weiterleitungsdienst geholt, damit der Browser fremde Seiten lesen darf.</p>
+    <div class="dlg-foot"><button class="btn primary" data-close>Fertig</button></div>`;
+  dlgBody.querySelector('#thr').addEventListener('input',e=>{
+    S.prefs.threshold=+e.target.value; dlgBody.querySelector('#thrVal').textContent=e.target.value;
+    ARTICLES.forEach(score); save(); render();
+  });
+  dlgBody.querySelector('#autoRef').addEventListener('change',e=>{ S.prefs.auto=e.target.checked; save(); setAuto(); });
+  dlg.showModal();
+});
+let autoTimer=null;
+function setAuto(){ clearInterval(autoTimer); if(S.prefs.auto) autoTimer=setInterval(refresh, 30*60*1000); }
+
+document.getElementById('refresh').addEventListener('click',refresh);
+document.getElementById('mobRefresh').addEventListener('click',refresh);
+document.getElementById('toggleRail').addEventListener('click',()=>document.getElementById('rail').classList.toggle('open'));
+
+/* --- Start -------------------------------------------------------------- */
+var WIRED=false, PREV_VISIT=0;
+function init(reload){
+  syncChips();
+  if(!WIRED){
+    ['onlyPicks','onlySaved','hideRead'].forEach(id=>bind(id,id));
+    document.getElementById('groupDupes').addEventListener('change',e=>{S.prefs.group=e.target.checked;save();render();});
+    WIRED=true;
+  }else{
+    ['onlyPicks','onlySaved','hideRead'].forEach(id=>document.getElementById(id).checked=!!S.prefs[id]);
+  }
+  document.getElementById('groupDupes').checked=S.prefs.group;
+  document.getElementById('sort').value=S.prefs.sort;
+  document.getElementById('radarWords').value=(S.prefs.radar||[]).join('\n');
+  renderSources(); render(); setAuto();
+  if(!reload) refresh();
+}
+load();
+PREV_VISIT = S.lastVisit || (Date.now()-864e5);
+S.lastVisit = Date.now(); save();
+init(false);
+</script>
+</body>
+</html>
