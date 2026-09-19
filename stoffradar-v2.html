@@ -197,14 +197,14 @@ dialog::backdrop{background:rgba(8,12,15,.5)}
 
     <div class="tools">
       <div class="seg" id="modeSeg">
-        <button data-mode="vorlauf" aria-pressed="true">Mit Vorlauf</button>
+        <button data-mode="vorschlag" aria-pressed="true">Vorschläge</button>
         <button data-mode="alle" aria-pressed="false">Alles</button>
         <button data-mode="gemerkt" aria-pressed="false">Gemerkt</button>
       </div>
       <input class="fld" id="q" placeholder="Suchen" style="flex:1;max-width:220px">
       <select class="fld" id="kreis" style="width:auto"><option value="">Bielefeld und Lippe</option></select>
       <select class="fld" id="sort" style="width:auto">
-        <option value="vorlauf">Nach Vorlauf</option>
+        <option value="rubrik">Nach Rubrik</option>
         <option value="score">Nach Stoffpotenzial</option>
         <option value="date">Nach Eingang</option>
       </select>
@@ -219,6 +219,7 @@ dialog::backdrop{background:rgba(8,12,15,.5)}
     <div class="panel">
       <h4>Ansicht</h4>
       <label class="chk"><input type="checkbox" id="hideDaily" checked> Tagesaktuelles ausblenden</label>
+      <label class="chk"><input type="checkbox" id="nurTermin"> Nur Themen mit Termin</label>
       <label class="chk"><input type="checkbox" id="group" checked> Doppelmeldungen bündeln</label>
       <label class="chk"><input type="checkbox" id="hideRead"> Gelesenes ausblenden</label>
     </div>
@@ -333,8 +334,8 @@ const DEFAULT_SOURCES = [
 const MONATE={januar:0,februar:1,'märz':2,maerz:2,april:3,mai:4,juni:5,juli:6,august:7,september:8,oktober:9,november:10,dezember:11};
 const JAHRESZEIT={'frühjahr':2,fruehjahr:2,'frühling':2,sommer:6,herbst:9,winter:0,advent:11,weihnachten:11,ostern:3,karneval:1};
 
-function parseWhen(text){
-  const t=(text||'').toLowerCase(), jetzt=new Date(), J=jetzt.getFullYear();
+function parseWhen(text, ref){
+  const t=(text||'').toLowerCase(), jetzt=ref?new Date(ref):new Date(), J=jetzt.getFullYear();
   const mk=(y,m,d,lab,prec)=>({ts:new Date(y,m,d||1,12).getTime(), label:lab, prec});
 
   let m=t.match(/\b(\d{1,2})\.\s?(\d{1,2})\.\s?(\d{4})\b/);
@@ -343,7 +344,7 @@ function parseWhen(text){
   m=t.match(/\b(\d{1,2})\.\s*(januar|februar|märz|maerz|april|mai|juni|juli|august|september|oktober|november|dezember)\s*(\d{4})?/);
   if(m){
     const mon=MONATE[m[2]]; let y=m[3]?+m[3]:J;
-    if(!m[3] && new Date(y,mon,+m[1],12) < jetzt-864e5) y=J+1;
+    if(!m[3] && new Date(y,mon,+m[1],12) < jetzt.getTime()-2*864e5) y=J+1;
     return mk(y,mon,+m[1], +m[1]+'. '+m[2][0].toUpperCase()+m[2].slice(1,3)+'.','tag');
   }
   m=t.match(/\b(ab|im|bis|zum|ende|anfang|mitte)\s+(januar|februar|märz|maerz|april|mai|juni|juli|august|september|oktober|november|dezember)\s*(\d{4})?/);
@@ -352,11 +353,11 @@ function parseWhen(text){
     if(!m[3] && mon<jetzt.getMonth()) y=J+1;
     return mk(y,mon,15, m[1]+' '+m[2][0].toUpperCase()+m[2].slice(1),'monat');
   }
-  m=t.match(/\b(frühjahr|fruehjahr|frühling|sommer|herbst|winter|advent|weihnachten|ostern|karneval)\b\s*(\d{4})?/);
-  if(m){
-    const mon=JAHRESZEIT[m[1]]; let y=m[2]?+m[2]:J;
-    if(!m[2] && mon<jetzt.getMonth()) y=J+1;
-    return mk(y,mon,15, m[1][0].toUpperCase()+m[1].slice(1)+' '+y,'monat');
+  m=t.match(/\b(im|ab|bis|zum|ende|anfang|mitte)?\s*(frühjahr|fruehjahr|frühling|sommer|herbst|winter|advent|weihnachten|ostern|karneval)\b\s*(\d{4})?/);
+  if(m && (m[1]||m[3])){
+    const mon=JAHRESZEIT[m[2]]; let y=m[3]?+m[3]:J;
+    if(!m[3] && mon<jetzt.getMonth()) y=J+1;
+    return mk(y,mon,15, m[2][0].toUpperCase()+m[2].slice(1)+' '+y,'monat');
   }
   m=t.match(/\b(20[2-4]\d)\b/g);
   if(m){
@@ -370,31 +371,25 @@ function parseWhen(text){
   return null;
 }
 
-/* Sprache, die Vorlauf verrät */
-const VORHABEN=['geplant','plant','planung','soll entstehen','soll gebaut','entsteht','entstehen','beginnt','startet','start im','künftig','zukünftig','vorbereitung','wird vorbereitet','vorbereitet','soll ','sollen ','vorhaben','konzept','machbarkeitsstudie','entwurf','ausschreibung','wettbewerb','antrag','vorlage','beteiligung','ideenwerkstatt','wird gebaut','bauarbeiten beginnen','eröffnet im','eröffnung im','premiere','erstaufführung','anmeldung','bewerbungsfrist','ab dem','voraussichtlich','angekündigt','in aussicht','beschließen','entscheidung steht','abstimmung','umgestaltet','saniert wird','einweihung'];
-const LANGZEIT=['seit jahren','über jahre','jahrzehnte','langfristig','laufend','begleitet','bauzeit','sanierung','umbau','forschungsprojekt','studie','langzeit','entwicklung','wandel','tradition','generation','gegründet','geschichte','archiv','nachlass','restaurierung','züchtet','sammelt','sammlung','werkstatt','ausbildung','lehrjahr','ehrenamt'];
-const TAGESAKTUELL=['gestern','heute früh','am wochenende','soeben','aktuell wird','unfall','zusammenstoß','verletzt','festgenommen','tatverdächtig','zeugen gesucht','einbrecher','gestohlen','brannte','feuerwehr rückte','endstand','spielbericht','einzelkritik','spieltag','tabellenplatz','gewann mit','verlor mit','blitzer','stau auf','vollsperrung','umleitung','wetterwarnung','fand statt','fand am','feierte','eröffnete gestern','wurde eröffnet'];
-
-
 /* Zuständigkeitsgebiet: Bielefeld und Kreis Lippe. Ort im Text erkennen. */
 const ORTE={
- 'Bielefeld':{g:'Bielefeld', w:['bielefeld','sennestadt','brackwede','schildesche','heepen','jöllenbeck','stieghorst','dornberg','gadderbaum','senne ','sparrenburg','bethel','olderdissen','ravensberger','obersee','johannisberg','milse','sieker','ummeln','quelle','babenhausen','hoberge']},
+ 'Bielefeld':{g:'Bielefeld', w:['bielefeld','sennestadt','brackwede','schildesche','heepen','jöllenbeck','stieghorst','dornberg','gadderbaum','sparrenburg','bethel','olderdissen','ravensberger','obersee','johannisberg','milse','sieker','ummeln','babenhausen','hoberge','wissenswerkstadt']},
  'Detmold':{g:'Kreis Lippe', w:['detmold','hiddesen','berlebeck','heiligenkirchen','pivitsheide','hermannsdenkmal','externsteine','freilichtmuseum','adlerwarte']},
- 'Lemgo':{g:'Kreis Lippe', w:['lemgo','brake','hörstmar','kirchheide','junkerhaus','hexenbürgermeister']},
- 'Bad Salzuflen':{g:'Kreis Lippe', w:['bad salzuflen','salzuflen','schötmar','werl-aspe','gradierwerk']},
- 'Lage':{g:'Kreis Lippe', w:['lage ','lage,','hörste','müssen','heiden','ziegeleimuseum']},
- 'Horn-Bad Meinberg':{g:'Kreis Lippe', w:['horn-bad meinberg','bad meinberg','horn ','leopoldstal','veldrom','silberbachtal']},
- 'Blomberg':{g:'Kreis Lippe', w:['blomberg','istrup','donop','cappel','eschenbruch']},
- 'Oerlinghausen':{g:'Kreis Lippe', w:['oerlinghausen','helpup','lipperreihe','archäologisches freilichtmuseum','segelflug']},
+ 'Lemgo':{g:'Kreis Lippe', w:['lemgo','hörstmar','kirchheide','junkerhaus','hexenbürgermeister']},
+ 'Bad Salzuflen':{g:'Kreis Lippe', w:['bad salzuflen','salzuflen','schötmar','gradierwerk']},
+ 'Lage':{g:'Kreis Lippe', w:['lage ','lage,','hörste','ziegeleimuseum']},
+ 'Horn-Bad Meinberg':{g:'Kreis Lippe', w:['horn-bad meinberg','bad meinberg','leopoldstal','veldrom','silberbachtal']},
+ 'Blomberg':{g:'Kreis Lippe', w:['blomberg','istrup','donop','eschenbruch']},
+ 'Oerlinghausen':{g:'Kreis Lippe', w:['oerlinghausen','helpup','lipperreihe','segelflug']},
  'Barntrup':{g:'Kreis Lippe', w:['barntrup','alverdissen','sonneborn']},
- 'Schieder-Schwalenberg':{g:'Kreis Lippe', w:['schieder','schwalenberg','wöbbel','glashütte']},
+ 'Schieder-Schwalenberg':{g:'Kreis Lippe', w:['schieder','schwalenberg','wöbbel']},
  'Lügde':{g:'Kreis Lippe', w:['lügde','luegde','elbrinxen','rischenau','osterräderlauf']},
  'Extertal':{g:'Kreis Lippe', w:['extertal','bösingfeld','almena','silixen']},
  'Kalletal':{g:'Kreis Lippe', w:['kalletal','hohenhausen','langenholzhausen','varenholz']},
- 'Dörentrup':{g:'Kreis Lippe', w:['dörentrup','doerentrup','bega','humfeld','sternwarte']},
- 'Augustdorf':{g:'Kreis Lippe', w:['augustdorf','senne-truppenübungsplatz','pionierbataillon']},
+ 'Dörentrup':{g:'Kreis Lippe', w:['dörentrup','doerentrup','humfeld','sternwarte']},
+ 'Augustdorf':{g:'Kreis Lippe', w:['augustdorf','truppenübungsplatz senne']},
  'Leopoldshöhe':{g:'Kreis Lippe', w:['leopoldshöhe','leopoldshoehe','asemissen','greste','bechterdissen']},
- 'Schlangen':{g:'Kreis Lippe', w:['schlangen','oesterholz','kohlstädt','strothetal']},
+ 'Schlangen':{g:'Kreis Lippe', w:['schlangen','oesterholz','kohlstädt']},
  'Kreis Lippe':{g:'Kreis Lippe', w:['kreis lippe','lippisch','lippe','landesverband','klinikum lippe','lipperland']}
 };
 function findeOrt(text){
@@ -404,28 +399,51 @@ function findeOrt(text){
 }
 const GEBIETE=['Bielefeld','Kreis Lippe'];
 
-/* Wovon eine Geschichte lebt */
-const SIGNALS=[
-  {tag:'Protagonist', w:15, words:['porträt','erzählt','erinnert sich','zeitzeug','überlebende','sein leben','ihr leben','ehrenamtlich','gründerin','gründer','meisterin','der letzte','die letzte','als einzige','als erster','als erste','widmet sich','kämpft','traum','berufung','schicksal','familie','ehepaar','nachbarn','anwohner','pflegerin','betroffene','freiwillige','gibt auf','übernimmt']},
-  {tag:'Konflikt', w:17, words:['streit','gestritten','protest','widerstand','bürgerinitiative','klage','prozess','gericht','kritik','umstritten','demonstration','besetzt','räumung','petition','vorwurf','skandal','wehren sich','debatte','abgelehnt','gescheitert','blockiert','verbot','infrage gestellt']},
-  {tag:'Schauplatz', w:11, words:['werkstatt','atelier','bühne','tierheim','tierpark','bauernhof','hofladen','wald','keller','bunker','turm','brauerei','gleis','markt','kirche','kloster','friedhof','labor','studio','chor','orchester','festival','freibad','kleingarten','museum','bibliothek','werkhalle','fabrik','mühle','fachwerk','hallenbad','sternwarte']},
-  {tag:'Ungewöhnlich', w:16, words:['kurios','einzigartig','rekord','weltweit','geheim','rätsel','verschwunden','wiederentdeckt','skurril','ausgerechnet','erfindet','erfindung','experiment','älteste','größte','kleinste','ungewöhnlich','erstmals','zum ersten mal']},
-  {tag:'Gesellschaft', w:12, words:['armut','wohnungsnot','obdachlos','pflege','demenz','inklusion','integration','geflüchtete','einsamkeit','jugendliche','senior','schule','kita','ärztemangel','klimaschutz','artensterben','leerstand','innenstadt','suchthilfe','teilhabe','barrierefrei','nachhaltig','artenschutz','renaturierung']},
+/* Rubriken nach dem, was die Lokalzeit tatsächlich sendet:
+   Menschen, Schulen und Vereine, Erinnern, Tiere und Natur, Handwerk,
+   lokaler Ärger, Mitmachbares, Forschung zum Anfassen. */
+const RUBRIKEN=[
+ {id:'menschen', titel:'Menschen, Vereine, Ehrenamt', w:20,
+  note:'Jemand tut etwas für andere oder macht etwas seit Langem. Die klassische Lokalzeit-Geschichte mit einem Gesicht.',
+  words:['verein','ehrenamt','ehrenamtlich','freiwillig','spende','spendet','gespendet','hilft','helferkreis','initiative','nachbarschaft','selbsthilfe','patenschaft','sucht nachwuchs','sucht mitglieder','sucht unterstützung','lebenswerk','porträt','gründerin','gründer','seit jahren','jubilar','betroffene','engagiert','kümmert sich','übernimmt','gibt auf','feiert','verabschiedet']},
+ {id:'jung', titel:'Schule, Kita, junge Leute', w:19,
+  note:'Kinder und Jugendliche vor der Kamera funktionieren fast immer. Projekte, Wettbewerbe, erste Male.',
+  words:['schule','schüler','schülerinnen','grundschule','gesamtschule','gymnasium','kita','kindergarten','jugendliche','jugendzentrum','azubi','ausbildung','studierende','studentin','erstklässler','klasse','projektwoche','schulhof','abschlussjahrgang','jugendfeuerwehr','pfadfinder','nachwuchs']},
+ {id:'erinnern', titel:'Geschichte und Erinnern', w:19,
+  note:'Aufarbeitung, Gedenken, Fundstücke. Bilder gibt es über Orte, Dokumente und Zeitzeugen.',
+  words:['gedenk','erinnert an','erinnerung','zeitzeug','nationalsozial','ns-zeit','stalag','euthanasie','stolperstein','aufarbeit','archiv','chronik','denkmal','historisch','heimatverein','nachlass','ausgrabung','fund','restauriert','jahrestag','kriegsgefangen','zwangsarbeit','museumsstück','vergessen','spurensuche']},
+ {id:'natur', titel:'Tiere, Natur, Jahreszeit', w:18,
+  note:'Immer drehbar, immer bebildert. Saisonales lässt sich Wochen vorher einplanen.',
+  words:['tier','tierheim','tierpark','bienen','imker','honig','storch','wald','baum','ernte','garten','naturschutz','artenschutz','vogel','hund','katze','pferd','schafe','wildnis','teich','fluss','bach','blüte','pilz','streuobst','hochwasser','klimaschutz','renaturierung','kleingarten','bauernhof']},
+ {id:'handwerk', titel:'Handwerk, Brauch, Nostalgie', w:18,
+  note:'Wie früher, von Hand, fast ausgestorben. Werkstätten liefern Ton und Bild von allein.',
+  words:['handwerk','werkstatt','meisterin','schmiede','bäckerei','brauerei','mühle','weberei','tischler','schreiner','restaurier','oldtimer','modellbau','sammlung','sammler','tradition','brauchtum','wie früher','in den 60ern','dampf','eisenbahn','schützenfest','trachten','rezept','handgemacht','letzte ihrer art']},
+ {id:'aerger', titel:'Was die Leute ärgert', w:20,
+  note:'Konflikt mit klarer Gegenseite. Betroffene reden gern, das trägt einen ganzen Beitrag.',
+  words:['ärger um','streit','protest','bürgerinitiative','kritik','wehren sich','petition','droht','bedroht','schließung','schließt','letzte chance','insolvenz','marode','sperrung','lärm','gestank','verzögert','baustelle','abriss','umstritten','beschwerde','gegen den','gegen die','sorgen sich','wut']},
+ {id:'mitmachen', titel:'Zum Anschauen und Ausprobieren', w:16,
+  note:'Feste, Ausstellungen, Mitmachaktionen. Gut als Tipp am Ende der Sendung.',
+  words:['festival','stadtfest','markt','ausstellung','konzert','premiere','führung','tag der offenen tür','mitmachen','workshop','freibad','schwimmbad','wanderung','ausflug','öffnet','eröffnet','saison','spielplan','lesung','kirmes','weihnachtsmarkt','adventsmarkt','ferienprogramm']},
+ {id:'forschung', titel:'Forschung zum Anfassen', w:16,
+  note:'Wissenschaft aus der Region, wenn es etwas zu zeigen gibt: Labor, Versuch, Feldarbeit.',
+  words:['forsch','studie','untersucht','experiment','labor','entwickelt','erfind','roboter','künstliche intelligenz','sensor','prototyp','uni bielefeld','hochschule','th owl','promotion','feldversuch','messung']},
+ {id:'alltag', titel:'Alltag und Zusammenleben', w:17,
+  note:'Pflege, Wohnen, Armut, Einsamkeit, Ankommen. Nah an den Zuschauern, braucht einen Menschen als Beispiel.',
+  words:['pflege','pflegeheim','demenz','gesundheit','arztpraxis','hausarzt','wohnen','miete','wohnraum','einsamkeit','integration','geflüchtete','inklusion','armut','tafel','obdachlos','suchthilfe','beratungsstelle','sozialarbeit','teilhabe','barrierefrei','nahversorgung','dorfladen','ehrenamtliche hilfe']}
 ];
+const TAGESAKTUELL=['unfall','zusammenstoß','frontal','verletzt','festgenommen','tatverdächtig','zeugen gesucht','einbrecher','gestohlen','raub','brannte','feuerwehr rückte','endstand','spielbericht','einzelkritik','spieltag','tabellenplatz','gewann mit','verlor mit','blitzer','stau auf','vollsperrung','umleitung','wetterwarnung','lottozahlen','aktienkurs'];
+const ROUTINE=['öffnungszeiten','sprechstunde','bleibt geschlossen','fällt aus','anmeldung läuft','stellenausschreibung','bekanntmachung','satzung','ausschreibung der','amtsblatt','tagesordnung','niederschrift'];
 
-const KLASSE={
-  termin:{rang:0, titel:'Termin steht fest', note:'Ein Datum in der Zukunft ist genannt. Hier lässt sich ein Dreh planen, vorher recherchieren und am Tag selbst drehen.'},
-  vorhaben:{rang:1, titel:'Vorhaben in Vorbereitung', note:'Etwas ist angekündigt, beschlossen oder in Planung, ohne festen Termin. Gut für eine Begleitung von Anfang an.'},
-  langzeit:{rang:2, titel:'Langzeitthemen', note:'Themen ohne Ablaufdatum: Menschen, Orte und Entwicklungen, die in Wochen genauso tragen wie heute.'},
-  offen:{rang:3, titel:'Weitere Fundstücke', note:''},
-  tagesaktuell:{rang:4, titel:'Tagesaktuelles', note:'Ereignisse, die vorbei sind, sobald sie gemeldet werden.'}
-};
+const RUB={};
+RUBRIKEN.forEach(r=>RUB[r.id]={titel:r.titel, note:r.note});
+RUB.tagesaktuell={titel:'Tagesaktuelles', note:'Vorbei, sobald es gemeldet ist. Voreingestellt ausgeblendet.'};
+RUB.offen={titel:'Weitere Fundstücke', note:'Kein klares Muster erkannt — lohnt trotzdem manchmal einen Blick.'};
 
 /* --- Zustand ------------------------------------------------------------ */
 const LS='stoffradar.v2';
 let S={
   sources:null,
-  prefs:{mode:'vorlauf', sort:'vorlauf', hideDaily:true, group:true, hideRead:false, radar:[], schwelle:28, monat:null, kreis:null},
+  prefs:{mode:'vorschlag', sort:'rubrik', hideDaily:true, group:true, hideRead:false, radar:[], schwelle:28, monat:null, kreis:null},
   saved:{}, read:{}, notes:{}, cache:{}, lastRun:0, letzte:null
 };
 let ARTICLES=[], BUSY=false, STATS={};
@@ -500,6 +518,45 @@ function parseFeed(xmlText){
   return out;
 }
 
+/* Letzte Stufe: Lesedienst, der eine Seite fertig aufbereitet zurückgibt */
+async function viaLesedienst(url, ms=20000){
+  const c=new AbortController(), t=setTimeout(()=>c.abort(),ms);
+  try{
+    const r=await fetch('https://r.jina.ai/'+url,{signal:c.signal,headers:{'x-return-format':'markdown'}});
+    clearTimeout(t);
+    if(!r.ok) throw new Error('Lesedienst HTTP '+r.status);
+    return await r.text();
+  }catch(e){ clearTimeout(t); throw e; }
+}
+function readMarkdown(md, base){
+  const raus=/^(mehr|weiterlesen|startseite|kontakt|impressum|datenschutz|suche|anmelden|login|newsletter|zur startseite|alle anzeigen|nach oben|cookie|barrierefreiheit|sitemap|inhalt|menü)$/i;
+  const out=[], seen=new Set();
+  const re=/\[([^\]\n]{24,170})\]\((https?:\/\/[^\s)]+)\)/g;
+  let m;
+  while((m=re.exec(md))){
+    const t=m[1].replace(/[*_`#]/g,'').replace(/\s+/g,' ').trim();
+    if(t.length<24||raus.test(t)||!/[a-zäöüß]/i.test(t)) continue;
+    if(/^!/.test(m[1])) continue;
+    const k=t.toLowerCase().slice(0,60); if(seen.has(k)) continue; seen.add(k);
+    out.push({title:t, link:m[2], desc:'', ts:0, outlet:''});
+    if(out.length>=30) break;
+  }
+  if(out.length<4){
+    // Überschriften als Rückfallebene
+    const zeilen=md.split('\n');
+    zeilen.forEach((z,i)=>{
+      const h=z.match(/^#{2,4}\s+(.{20,160})$/);
+      if(h){
+        const t=h[1].replace(/[*_`]/g,'').trim();
+        const k=t.toLowerCase().slice(0,60); if(seen.has(k)) return; seen.add(k);
+        const naechste=(zeilen[i+1]||'')+' '+(zeilen[i+2]||'');
+        out.push({title:t, link:base, desc:naechste.replace(/[#*_`]/g,'').trim().slice(0,260), ts:0, outlet:''});
+      }
+    });
+  }
+  return out;
+}
+
 /* Wenn kein Feed da ist: Überschriften der Seite lesen */
 function readHeadlines(html, base){
   const doc=new DOMParser().parseFromString(html,'text/html');
@@ -564,6 +621,11 @@ async function leseQuelle(src){
       }catch(e){}
     }
     if(best.length>=4){ S.cache['p:'+src.id]=bestUrl; src.gelesen='Überschriften'; return best; }
+    try{
+      const md=await viaLesedienst(bestUrl);
+      const hl=readMarkdown(md,bestUrl);
+      if(hl.length>=4){ S.cache['p:'+src.id]=bestUrl; src.gelesen='Lesedienst'; return hl; }
+    }catch(e){}
   }
 
   // übliche Adressen durchprobieren
@@ -578,44 +640,59 @@ async function leseQuelle(src){
       if(hl.length>=4){ S.cache['p:'+src.id]=c; src.gelesen='Überschriften'; return hl; }
     }catch(e){}
   }
+  // letzte Stufe: Lesedienst
+  try{
+    const md=await viaLesedienst(S.cache['p:'+src.id]||src.url);
+    const hl=readMarkdown(md, src.url);
+    if(hl.length>=4){ src.gelesen='Lesedienst'; return hl; }
+  }catch(e){}
   throw new Error('weder Feed noch lesbare Seite gefunden');
 }
 
-/* --- Bewerten und einordnen --------------------------------------------- */
+/* --- Bewerten: Taugt das für einen Beitrag? ----------------------------- */
 function bewerte(a){
   const hay=(a.title+' '+(a.desc||'')).toLowerCase();
-  let s=0; const tags=[];
-  for(const g of SIGNALS){
+  let s=0, beste=null, bestW=0; const tags=[];
+  for(const r of RUBRIKEN){
     let hit=0;
-    for(const w of g.words){ if(hay.includes(w)){ hit++; if(hit>=2) break; } }
-    if(hit){ s+=g.w+(hit>1?4:0); tags.push(g.tag); }
+    for(const w of r.words){ if(hay.includes(w)){ hit++; if(hit>=3) break; } }
+    if(hit){
+      const wert=r.w+(hit>1?6:0)+(hit>2?4:0);
+      s+=Math.round(wert*0.6);
+      tags.push(r.titel.split(',')[0]);
+      if(wert>bestW){ bestW=wert; beste=r.id; }
+    }
   }
   const tagesaktuell=TAGESAKTUELL.some(w=>hay.includes(w));
-  const vorhaben=VORHABEN.some(w=>hay.includes(w));
-  const langzeit=LANGZEIT.some(w=>hay.includes(w));
-  const when=parseWhen(a.title) || parseWhen(a.title+' '+(a.desc||''));
+  const routine=ROUTINE.some(w=>hay.includes(w));
+
+  // Ort im Zuständigkeitsgebiet
   const ort=findeOrt(a.title+' '+(a.desc||'')) || findeOrt(a.source||'');
   a.ort=ort?ort.ort:null; a.gebiet=ort?ort.gebiet:null;
-  if(ort) s+=12;
-  const zukunft = when && when.ts > Date.now()-2*864e5;
+  if(ort) s+=14;
 
-  a.when = zukunft ? when : null;
-  if(zukunft){ a.klasse='termin'; s+=34; }
-  else if(vorhaben && !tagesaktuell){ a.klasse='vorhaben'; s+=26; }
-  else if(langzeit && !tagesaktuell){ a.klasse='langzeit'; s+=19; }
-  else if(tagesaktuell){ a.klasse='tagesaktuell'; s-=34; }
-  else a.klasse='offen';
+  // Datum ist ein Bonus, keine Bedingung
+  const ref=a.ts||Date.now();
+  const when=parseWhen(a.title,ref) || parseWhen(a.title+' '+(a.desc||''),ref);
+  a.when = (when && when.ts>Date.now()-2*864e5) ? when : null;
+  if(a.when){ s+=10; tags.unshift('Termin'); }
 
-  if(a.when && a.when.ts>Date.now()+21*864e5) s+=8;   // genug Vorlauf zum Planen
-  if((a.desc||'').length>150) s+=4;
+  // Ein Mensch im Text macht den Beitrag erzählbar
+  if(/\b(herr|frau|familie|ehepaar|seit \d+ jahren|ihr|sein)\b/.test(hay) && /\b(erzählt|berichtet|sagt|arbeitet|lebt|baut|sammelt|pflegt|kümmert)\b/.test(hay)) s+=8;
+
+  if(tagesaktuell){ a.rubrik='tagesaktuell'; s-=40; }
+  else if(routine && !beste){ a.rubrik='offen'; s-=18; }
+  else a.rubrik = beste || 'offen';
+
+  if((a.desc||'').length>150) s+=5;
 
   let radarHit=null;
   for(const w of (S.prefs.radar||[])){ const lw=w.toLowerCase().trim(); if(lw&&hay.includes(lw)){ radarHit=w; s+=40; break; } }
   if(radarHit) tags.unshift('Radar: '+radarHit);
 
   a.score=Math.max(0,Math.min(100,Math.round(s)));
-  a.tags=tags;
-  a.pick=a.score>=S.prefs.schwelle && a.klasse!=='tagesaktuell';
+  a.tags=[...new Set(tags)];
+  a.pick=a.score>=S.prefs.schwelle && a.rubrik!=='tagesaktuell';
   return a;
 }
 
@@ -623,7 +700,7 @@ function bewerte(a){
 function logZeile(src){
   const z={idle:'·',load:'<span class="spin"></span>',ok:'✓',empty:'–',err:'×'}[src.status]||'·';
   const cls=src.status==='ok'?'done':src.status==='err'?'fail':'';
-  const info=src.status==='err'?(src.err||'nicht erreichbar'):src.status==='ok'?(src.count+(src.gelesen?' Überschriften':' Einträge')):src.status==='load'?'wird gelesen':'';
+  const info=src.status==='err'?(src.err||'nicht erreichbar'):src.status==='ok'?(src.count+' '+(src.gelesen||'Einträge')):src.status==='load'?'wird gelesen':'';
   return '<div class="'+cls+'"><i>'+z+'</i><span style="flex:1">'+src.name+'</span><span style="color:var(--mute)">'+info+'</span></div>';
 }
 function zeichneLoader(aktiv, fertig, start){
@@ -718,8 +795,9 @@ function auswahl(){
   STATS={tages:0,filter:0,gebuendelt:0};
   let arr=ARTICLES.filter(a=>{
     if(p.mode==='gemerkt') return !!S.saved[a.id];
-    if(p.hideDaily && a.klasse==='tagesaktuell' && !S.saved[a.id]){ STATS.tages++; return false; }
-    if(p.mode==='vorlauf' && !['termin','vorhaben','langzeit'].includes(a.klasse) && !S.saved[a.id]){ STATS.filter++; return false; }
+    if(p.hideDaily && a.rubrik==='tagesaktuell' && !S.saved[a.id]){ STATS.tages++; return false; }
+    if(p.mode==='vorschlag' && (a.rubrik==='offen'||a.rubrik==='tagesaktuell') && !S.saved[a.id]){ STATS.filter++; return false; }
+    if(p.nurTermin && !a.when && !S.saved[a.id]){ STATS.filter++; return false; }
     if(p.hideRead && S.read[a.id] && !S.saved[a.id]){ STATS.filter++; return false; }
     if(p.monat && (!a.when || monKey(a.when.ts)!==p.monat)){ STATS.filter++; return false; }
     if(p.kreis && a.ort!==p.kreis && a.gebiet!==p.kreis){ STATS.filter++; return false; }
@@ -742,11 +820,8 @@ function auswahl(){
   arr.sort((a,b)=>{
     if(p.sort==='score') return b.score-a.score || (b.ts-a.ts);
     if(p.sort==='date') return (b.ts-a.ts) || (b.score-a.score);
-    const ra=KLASSE[a.klasse].rang, rb=KLASSE[b.klasse].rang;
-    if(ra!==rb) return ra-rb;
-    if(a.when&&b.when) return a.when.ts-b.when.ts;
-    if(a.when) return -1;
-    if(b.when) return 1;
+    const ra=RUBRIKEN.findIndex(r=>r.id===a.rubrik), rb=RUBRIKEN.findIndex(r=>r.id===b.rubrik);
+    if(ra!==rb) return (ra<0?99:ra)-(rb<0?99:rb);
     return b.score-a.score;
   });
   return arr;
@@ -782,8 +857,8 @@ function render(){
 
   // Streuung über das Zuständigkeitsgebiet
   const proOrt={};
-  ARTICLES.forEach(a=>{ if(a.klasse!=='tagesaktuell' && a.ort) proOrt[a.ort]=(proOrt[a.ort]||0)+1; });
-  const ohne=ARTICLES.filter(a=>a.klasse!=='tagesaktuell'&&!a.ort).length;
+  ARTICLES.forEach(a=>{ if(a.rubrik!=='tagesaktuell' && a.ort) proOrt[a.ort]=(proOrt[a.ort]||0)+1; });
+  const ohne=ARTICLES.filter(a=>a.rubrik!=='tagesaktuell'&&!a.ort).length;
   const namen=Object.keys(ORTE);
   document.getElementById('streuung').innerHTML=namen.map(n=>
     '<div class="chk" style="justify-content:space-between;cursor:default"><span'+(proOrt[n]?'':' style="color:var(--mute)"')+'>'+n+'</span><b>'+(proOrt[n]||0)+'</b></div>'
@@ -804,10 +879,11 @@ function render(){
     return;
   }
   const gruppen={};
-  arr.forEach(a=>{ (gruppen[a.klasse]=gruppen[a.klasse]||[]).push(a); });
-  const reihe=Object.keys(gruppen).sort((a,b)=>KLASSE[a].rang-KLASSE[b].rang);
+  arr.forEach(a=>{ (gruppen[a.rubrik]=gruppen[a.rubrik]||[]).push(a); });
+  const ordnung=[...RUBRIKEN.map(r=>r.id),'offen','tagesaktuell'];
+  const reihe=Object.keys(gruppen).sort((a,b)=>ordnung.indexOf(a)-ordnung.indexOf(b));
   L.innerHTML=reihe.map(k=>{
-    const g=KLASSE[k];
+    const g=RUB[k]||{titel:k,note:''};
     return '<section class="group"><div class="group-head"><h2>'+g.titel+'</h2><span>'+gruppen[k].length+'</span></div>'+
       (g.note?'<p class="group-note">'+g.note+'</p>':'')+
       gruppen[k].map(karte).join('')+'</section>';
@@ -818,7 +894,7 @@ function karte(a){
   const sv=S.saved[a.id], rd=S.read[a.id], note=S.notes[a.id]||'';
   const wann = a.when
     ? '<span class="d">'+esc(a.when.label)+'</span><span class="s">'+restzeit(a.when.ts)+'</span>'
-    : '<span class="s">'+({vorhaben:'angekündigt',langzeit:'jederzeit',tagesaktuell:'von heute',offen:'ohne Datum'}[a.klasse]||'')+'</span>';
+    : '<span class="s">'+(a.rubrik==='tagesaktuell'?'von heute':'jederzeit drehbar')+'</span>';
   return '<article class="item'+(a.pick?' pick':'')+(rd?' read':'')+'" data-id="'+esc(a.id)+'">'+
     '<div class="when">'+wann+'</div><div class="body">'+
       '<h3><a href="'+esc(a.link)+'" target="_blank" rel="noopener">'+esc(a.title)+'</a></h3>'+
@@ -850,7 +926,7 @@ function renderSources(){
   S.sources.forEach(s=>{
     if(s.k!==kat){ kat=s.k; html+='<div class="kat">'+esc(kat)+'</div>'; }
     const cls=s.status==='ok'?'ok':s.status==='err'?'err':s.status==='load'?'load':'';
-    const info=s.status==='err'?(s.err||'nicht erreichbar'):s.status==='empty'?'keine Einträge':s.count?(s.count+' Einträge'+(s.gelesen?' (Überschriften)':'')):(s.kind==='site'?'Website':'Feed');
+    const info=s.status==='err'?(s.err||'nicht erreichbar'):s.status==='empty'?'keine Einträge':s.count?(s.count+' Einträge'+(s.gelesen?' ('+s.gelesen+')':'')):(s.kind==='site'?'Website':'Feed');
     html+='<div class="srcrow" data-sid="'+esc(s.id)+'"><span class="dot '+cls+'"></span>'+
       '<label><input type="checkbox" class="on" '+(s.on?'checked':'')+' style="margin-right:7px;accent-color:var(--accent)">'+esc(s.name)+
       '<small>'+esc(info)+'</small></label><button class="x del">×</button></div>';
@@ -893,7 +969,7 @@ document.getElementById('modeSeg').addEventListener('click',e=>{
 document.getElementById('q').addEventListener('input',()=>{ clearTimeout(window.__q); window.__q=setTimeout(render,180); });
 document.getElementById('sort').addEventListener('change',e=>{ S.prefs.sort=e.target.value; save(); render(); });
 document.getElementById('kreis').addEventListener('change',e=>{ S.prefs.kreis=e.target.value||null; save(); render(); });
-['hideDaily','group','hideRead'].forEach(id=>{
+['hideDaily','nurTermin','group','hideRead'].forEach(id=>{
   document.getElementById(id).addEventListener('change',e=>{ S.prefs[id]=e.target.checked; save(); render(); });
 });
 document.getElementById('saveRadar').addEventListener('click',()=>{
@@ -969,7 +1045,7 @@ document.getElementById('cfg').addEventListener('click',()=>{
   dlgBody.innerHTML=`<h3>Einstellungen</h3>
     <p>Ab welchem Wert ein Fundstück als Stoff markiert wird. Niedriger heißt großzügiger.</p>
     <label class="chk" style="gap:14px">Schwelle <input type="range" min="15" max="70" value="${S.prefs.schwelle}" id="thr" style="flex:1"> <b id="thrV">${S.prefs.schwelle}</b></label>
-    <p class="hint" style="margin-top:14px">So ordnet das Programm ein: <b>Termin steht fest</b>, wenn im Text ein künftiges Datum vorkommt. <b>Vorhaben</b> bei Wörtern wie geplant, entsteht, startet. <b>Langzeitthema</b> bei Dauer und Entwicklung. <b>Tagesaktuelles</b> bei Unfällen, Spielberichten und Vergangenheitsformen — das ist voreingestellt ausgeblendet.</p>
+    <p class="hint" style="margin-top:14px">Einsortiert wird nach dem, was die Lokalzeit sendet: Menschen und Ehrenamt, Schule und Kita, Geschichte und Erinnern, Tiere und Natur, Handwerk und Brauch, lokaler Ärger, Mitmachbares, Forschung zum Anfassen, Alltag. Ein Datum ist nur ein Bonus, keine Bedingung. Unfälle und Spielberichte landen unter Tagesaktuelles und sind ausgeblendet.</p>
     <div class="foot"><button class="btn pri" data-close>Fertig</button></div>`;
   dlgBody.querySelector('#thr').addEventListener('input',e=>{
     S.prefs.schwelle=+e.target.value; dlgBody.querySelector('#thrV').textContent=e.target.value;
@@ -1003,7 +1079,7 @@ document.getElementById('file').addEventListener('change',async e=>{
 function start(neu){
   document.getElementById('radar').value=(S.prefs.radar||[]).join('\n');
   document.getElementById('sort').value=S.prefs.sort;
-  ['hideDaily','group','hideRead'].forEach(id=>document.getElementById(id).checked=!!S.prefs[id]);
+  ['hideDaily','nurTermin','group','hideRead'].forEach(id=>document.getElementById(id).checked=!!S.prefs[id]);
   document.querySelectorAll('#modeSeg button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.mode===S.prefs.mode));
   renderSources();
 
