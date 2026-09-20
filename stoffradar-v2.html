@@ -273,52 +273,52 @@ const GN = q => 'https://news.google.com/rss/search?q='+encodeURIComponent(q)+'&
    kind 'site'  Website; Feed wird gesucht, sonst werden Überschriften gelesen */
 const DEFAULT_SOURCES = [
   // Bielefeld: Verwaltung und Politik
-  {id:'bi-stadt', k:'Bielefeld', name:'Stadt Bielefeld, Presse',    kind:'site', url:'https://www.bielefeld.de/pressemeldungen', on:true},
-  {id:'bi-ris',   k:'Bielefeld', name:'Ratsinformationssystem',      kind:'site', url:'https://anwendungen.bielefeld.de/bi/si0040.asp', on:true},
-  {id:'bi-stw',   k:'Bielefeld', name:'Stadtwerke Bielefeld',        kind:'site', url:'https://www.stadtwerke-bielefeld.de/presse', on:false},
-  {id:'bi-mobiel',k:'Bielefeld', name:'moBiel',                      kind:'site', url:'https://www.mobiel.de/aktuelles', on:false},
+  {id:'bi-stadt', k:'Bielefeld', name:'Stadt Bielefeld, Presse',    o:'Bielefeld', kind:'site', url:'https://www.bielefeld.de/pressemeldungen', on:true},
+  {id:'bi-ris',   k:'Bielefeld', name:'Ratsinformationssystem',      o:'Bielefeld', kind:'site', url:'https://anwendungen.bielefeld.de/bi/si0040.asp', on:true},
+  {id:'bi-stw',   k:'Bielefeld', name:'Stadtwerke Bielefeld',        o:'Bielefeld', kind:'site', url:'https://www.stadtwerke-bielefeld.de/presse', on:false},
+  {id:'bi-mobiel',k:'Bielefeld', name:'moBiel',                      o:'Bielefeld', kind:'site', url:'https://www.mobiel.de/aktuelles', on:false},
 
   // Bielefeld: Wissenschaft, Kultur, Soziales
-  {id:'bi-uni',   k:'Bielefeld', name:'Universität Bielefeld',       kind:'site', url:'https://aktuell.uni-bielefeld.de/', on:true},
-  {id:'bi-hsbi',  k:'Bielefeld', name:'HSBI, Pressemitteilungen',    kind:'site', url:'https://www.hsbi.de/presse/pressemitteilungen', on:true},
-  {id:'bi-theater',k:'Bielefeld',name:'Theater Bielefeld, Spielplan',kind:'site', url:'https://www.theater-bielefeld.de/spielplan/', on:true},
-  {id:'bi-kunst', k:'Bielefeld', name:'Kunsthalle Bielefeld',        kind:'site', url:'https://www.kunsthalle-bielefeld.de/ausstellungen/', on:true},
-  {id:'bi-mark',  k:'Bielefeld', name:'Bielefeld Marketing',         kind:'site', url:'https://www.bielefeld.jetzt/veranstaltungen', on:true},
-  {id:'bi-bethel',k:'Bielefeld', name:'Bethel, Presse',              kind:'site', url:'https://www.bethel.de/presse', on:true},
-  {id:'bi-frw',   k:'Bielefeld', name:'Freiwilligenagentur',         kind:'site', url:'https://www.freiwilligenagentur-bielefeld.de/aktuelles', on:true},
-  {id:'bi-nabu',  k:'Bielefeld', name:'NABU Bielefeld',              kind:'site', url:'https://www.nabu-bielefeld.de/aktuelles', on:false},
-  {id:'bi-tier',  k:'Bielefeld', name:'Tierheim Bielefeld',          kind:'site', url:'https://www.tierheim-bielefeld.de/aktuelles', on:false},
-  {id:'bi-kirche',k:'Bielefeld', name:'Kirchenkreis Bielefeld',      kind:'site', url:'https://www.kirchenkreis-bielefeld.de/aktuelles', on:false},
+  {id:'bi-uni',   k:'Bielefeld', name:'Universität Bielefeld',       o:'Bielefeld', kind:'site', url:'https://aktuell.uni-bielefeld.de/', on:true},
+  {id:'bi-hsbi',  k:'Bielefeld', name:'HSBI, Pressemitteilungen',    o:'Bielefeld', kind:'site', url:'https://www.hsbi.de/presse/pressemitteilungen', on:true},
+  {id:'bi-theater',k:'Bielefeld',name:'Theater Bielefeld, Spielplan',o:'Bielefeld', kind:'site', url:'https://www.theater-bielefeld.de/spielplan/', on:true},
+  {id:'bi-kunst', k:'Bielefeld', name:'Kunsthalle Bielefeld',        o:'Bielefeld', kind:'site', url:'https://www.kunsthalle-bielefeld.de/ausstellungen/', on:true},
+  {id:'bi-mark',  k:'Bielefeld', name:'Bielefeld Marketing',         o:'Bielefeld', kind:'site', url:'https://www.bielefeld.jetzt/veranstaltungen', on:true},
+  {id:'bi-bethel',k:'Bielefeld', name:'Bethel, Presse',              o:'Bielefeld', kind:'site', url:'https://www.bethel.de/presse', on:true},
+  {id:'bi-frw',   k:'Bielefeld', name:'Freiwilligenagentur',         o:'Bielefeld', kind:'site', url:'https://www.freiwilligenagentur-bielefeld.de/aktuelles', on:true},
+  {id:'bi-nabu',  k:'Bielefeld', name:'NABU Bielefeld',              o:'Bielefeld', kind:'site', url:'https://www.nabu-bielefeld.de/aktuelles', on:false},
+  {id:'bi-tier',  k:'Bielefeld', name:'Tierheim Bielefeld',          o:'Bielefeld', kind:'site', url:'https://www.tierheim-bielefeld.de/aktuelles', on:false},
+  {id:'bi-kirche',k:'Bielefeld', name:'Kirchenkreis Bielefeld',      o:'Bielefeld', kind:'site', url:'https://www.kirchenkreis-bielefeld.de/aktuelles', on:false},
 
   // Kreis Lippe: Kreisverwaltung und Einrichtungen
-  {id:'lip-kreis',k:'Kreis Lippe', name:'Kreis Lippe, Presse',       kind:'site', url:'https://www.kreis-lippe.de/kreis-lippe/aktuelles/pressemitteilungen/', on:true},
-  {id:'lip-lvl',  k:'Kreis Lippe', name:'Landesverband Lippe',       kind:'site', url:'https://www.landesverband-lippe.de/presse', on:true},
-  {id:'lip-klinik',k:'Kreis Lippe',name:'Klinikum Lippe',            kind:'site', url:'https://www.klinikum-lippe.de/presse', on:false},
-  {id:'lip-thowl',k:'Kreis Lippe', name:'TH OWL, Presse',            kind:'site', url:'https://www.th-owl.de/hochschule/presse-und-kommunikation/', on:true},
-  {id:'lip-hfm',  k:'Kreis Lippe', name:'Hochschule für Musik Detmold', kind:'site', url:'https://www.hfm-detmold.de/aktuelles', on:true},
-  {id:'lip-ldt',  k:'Kreis Lippe', name:'Landestheater Detmold',     kind:'site', url:'https://www.landestheater-detmold.de/spielplan/', on:true},
-  {id:'lip-freilicht',k:'Kreis Lippe', name:'LWL-Freilichtmuseum Detmold', kind:'site', url:'https://www.lwl-freilichtmuseum-detmold.de/de/veranstaltungen/', on:true},
-  {id:'lip-landesmus',k:'Kreis Lippe', name:'Lippisches Landesmuseum', kind:'site', url:'https://www.lippisches-landesmuseum.de/ausstellungen/', on:true},
-  {id:'lip-tourismus',k:'Kreis Lippe', name:'Lippe Tourismus, Termine', kind:'site', url:'https://www.lippe-tourismus.de/veranstaltungen', on:true},
-  {id:'lip-kirche',k:'Kreis Lippe', name:'Lippische Landeskirche',   kind:'site', url:'https://www.lippische-landeskirche.de/aktuelles', on:false},
+  {id:'lip-kreis',k:'Kreis Lippe', name:'Kreis Lippe, Presse',       o:'Kreis Lippe', kind:'site', url:'https://www.kreis-lippe.de/kreis-lippe/aktuelles/pressemitteilungen/', on:true},
+  {id:'lip-lvl',  k:'Kreis Lippe', name:'Landesverband Lippe',       o:'Kreis Lippe', kind:'site', url:'https://www.landesverband-lippe.de/presse', on:true},
+  {id:'lip-klinik',k:'Kreis Lippe',name:'Klinikum Lippe',            o:'Kreis Lippe', kind:'site', url:'https://www.klinikum-lippe.de/presse', on:false},
+  {id:'lip-thowl',k:'Kreis Lippe', name:'TH OWL, Presse',            o:'Lemgo', kind:'site', url:'https://www.th-owl.de/hochschule/presse-und-kommunikation/', on:true},
+  {id:'lip-hfm',  k:'Kreis Lippe', name:'Hochschule für Musik Detmold', o:'Detmold', kind:'site', url:'https://www.hfm-detmold.de/aktuelles', on:true},
+  {id:'lip-ldt',  k:'Kreis Lippe', name:'Landestheater Detmold',     o:'Detmold', kind:'site', url:'https://www.landestheater-detmold.de/spielplan/', on:true},
+  {id:'lip-freilicht',k:'Kreis Lippe', name:'LWL-Freilichtmuseum Detmold', o:'Detmold', kind:'site', url:'https://www.lwl-freilichtmuseum-detmold.de/de/veranstaltungen/', on:true},
+  {id:'lip-landesmus',k:'Kreis Lippe', name:'Lippisches Landesmuseum', o:'Detmold', kind:'site', url:'https://www.lippisches-landesmuseum.de/ausstellungen/', on:true},
+  {id:'lip-tourismus',k:'Kreis Lippe', name:'Lippe Tourismus, Termine', o:'Kreis Lippe', kind:'site', url:'https://www.lippe-tourismus.de/veranstaltungen', on:true},
+  {id:'lip-kirche',k:'Kreis Lippe', name:'Lippische Landeskirche',   o:'Detmold', kind:'site', url:'https://www.lippische-landeskirche.de/aktuelles', on:false},
 
   // Kreis Lippe: die 16 Städte und Gemeinden
-  {id:'lip-detmold',k:'Städte in Lippe', name:'Detmold',             kind:'site', url:'https://www.detmold.de/rathaus/presse', on:true},
-  {id:'lip-lemgo',  k:'Städte in Lippe', name:'Lemgo',               kind:'site', url:'https://www.lemgo.de/', on:true},
-  {id:'lip-salz',   k:'Städte in Lippe', name:'Bad Salzuflen',       kind:'site', url:'https://www.bad-salzuflen.de/', on:true},
-  {id:'lip-lage',   k:'Städte in Lippe', name:'Lage',                kind:'site', url:'https://www.lage.de/', on:true},
-  {id:'lip-horn',   k:'Städte in Lippe', name:'Horn-Bad Meinberg',   kind:'site', url:'https://www.horn-badmeinberg.de/', on:true},
-  {id:'lip-blomberg',k:'Städte in Lippe',name:'Blomberg',            kind:'site', url:'https://www.blomberg-lippe.de/', on:true},
-  {id:'lip-oerling',k:'Städte in Lippe', name:'Oerlinghausen',       kind:'site', url:'https://www.oerlinghausen.de/', on:true},
-  {id:'lip-barntrup',k:'Städte in Lippe',name:'Barntrup',            kind:'site', url:'https://www.barntrup.de/', on:false},
-  {id:'lip-schieder',k:'Städte in Lippe',name:'Schieder-Schwalenberg',kind:'site', url:'https://www.schieder-schwalenberg.de/', on:false},
-  {id:'lip-luegde',k:'Städte in Lippe', name:'Lügde',                kind:'site', url:'https://www.luegde.de/', on:false},
-  {id:'lip-extertal',k:'Städte in Lippe',name:'Extertal',            kind:'site', url:'https://www.extertal.de/', on:false},
-  {id:'lip-kalletal',k:'Städte in Lippe',name:'Kalletal',            kind:'site', url:'https://www.kalletal.de/', on:false},
-  {id:'lip-doerentrup',k:'Städte in Lippe',name:'Dörentrup',         kind:'site', url:'https://www.doerentrup.de/', on:false},
-  {id:'lip-augustdorf',k:'Städte in Lippe',name:'Augustdorf',        kind:'site', url:'https://www.augustdorf.de/', on:false},
-  {id:'lip-leopold',k:'Städte in Lippe', name:'Leopoldshöhe',        kind:'site', url:'https://www.leopoldshoehe.de/', on:false},
-  {id:'lip-schlangen',k:'Städte in Lippe',name:'Schlangen',          kind:'site', url:'https://www.schlangen.de/', on:false},
+  {id:'lip-detmold',k:'Städte in Lippe', name:'Detmold',             o:'Detmold', kind:'site', url:'https://www.detmold.de/rathaus/presse', on:true},
+  {id:'lip-lemgo',  k:'Städte in Lippe', name:'Lemgo',               o:'Lemgo', kind:'site', url:'https://www.lemgo.de/', on:true},
+  {id:'lip-salz',   k:'Städte in Lippe', name:'Bad Salzuflen',       o:'Bad Salzuflen', kind:'site', url:'https://www.bad-salzuflen.de/', on:true},
+  {id:'lip-lage',   k:'Städte in Lippe', name:'Lage',                o:'Lage', kind:'site', url:'https://www.lage.de/', on:true},
+  {id:'lip-horn',   k:'Städte in Lippe', name:'Horn-Bad Meinberg',   o:'Horn-Bad Meinberg', kind:'site', url:'https://www.horn-badmeinberg.de/', on:true},
+  {id:'lip-blomberg',k:'Städte in Lippe',name:'Blomberg',            o:'Blomberg', kind:'site', url:'https://www.blomberg-lippe.de/', on:true},
+  {id:'lip-oerling',k:'Städte in Lippe', name:'Oerlinghausen',       o:'Oerlinghausen', kind:'site', url:'https://www.oerlinghausen.de/', on:true},
+  {id:'lip-barntrup',k:'Städte in Lippe',name:'Barntrup',            o:'Barntrup', kind:'site', url:'https://www.barntrup.de/', on:false},
+  {id:'lip-schieder',k:'Städte in Lippe',name:'Schieder-Schwalenberg',o:'Schieder-Schwalenberg', kind:'site', url:'https://www.schieder-schwalenberg.de/', on:false},
+  {id:'lip-luegde',k:'Städte in Lippe', name:'Lügde',                o:'Lügde', kind:'site', url:'https://www.luegde.de/', on:false},
+  {id:'lip-extertal',k:'Städte in Lippe',name:'Extertal',            o:'Extertal', kind:'site', url:'https://www.extertal.de/', on:false},
+  {id:'lip-kalletal',k:'Städte in Lippe',name:'Kalletal',            o:'Kalletal', kind:'site', url:'https://www.kalletal.de/', on:false},
+  {id:'lip-doerentrup',k:'Städte in Lippe',name:'Dörentrup',         o:'Dörentrup', kind:'site', url:'https://www.doerentrup.de/', on:false},
+  {id:'lip-augustdorf',k:'Städte in Lippe',name:'Augustdorf',        o:'Augustdorf', kind:'site', url:'https://www.augustdorf.de/', on:false},
+  {id:'lip-leopold',k:'Städte in Lippe', name:'Leopoldshöhe',        o:'Leopoldshöhe', kind:'site', url:'https://www.leopoldshoehe.de/', on:false},
+  {id:'lip-schlangen',k:'Städte in Lippe',name:'Schlangen',          o:'Schlangen', kind:'site', url:'https://www.schlangen.de/', on:false},
 
   // Gezielte Suche nach Zukunftssprache, nur Bielefeld und Lippe
   {id:'z-plan', k:'Zukunftssuche', name:'Geplant, entsteht, Baubeginn', kind:'feed', url:GN('(Bielefeld OR "Kreis Lippe" OR Detmold OR Lemgo OR "Bad Salzuflen" OR Lage OR Blomberg OR Oerlinghausen) (geplant OR entsteht OR Baubeginn OR "soll entstehen") when:30d'), on:true},
@@ -408,7 +408,7 @@ const RUBRIKEN=[
   words:['verein','ehrenamt','ehrenamtlich','freiwillig','spende','spendet','gespendet','hilft','helferkreis','initiative','nachbarschaft','selbsthilfe','patenschaft','sucht nachwuchs','sucht mitglieder','sucht unterstützung','lebenswerk','porträt','gründerin','gründer','seit jahren','jubilar','betroffene','engagiert','kümmert sich','übernimmt','gibt auf','feiert','verabschiedet']},
  {id:'jung', titel:'Schule, Kita, junge Leute', w:19,
   note:'Kinder und Jugendliche vor der Kamera funktionieren fast immer. Projekte, Wettbewerbe, erste Male.',
-  words:['schule','schüler','schülerinnen','grundschule','gesamtschule','gymnasium','kita','kindergarten','jugendliche','jugendzentrum','azubi','ausbildung','studierende','studentin','erstklässler','klasse','projektwoche','schulhof','abschlussjahrgang','jugendfeuerwehr','pfadfinder','nachwuchs']},
+  words:['schule','schüler','schülerinnen','grundschule','gesamtschule','gymnasium','kita','kindergarten','jugendliche','jugendzentrum','azubi','ausbildung','studierende','studentin','erstklässler','klasse','schulteam','schulklasse','wettbewerb','projektwoche','schulhof','abschlussjahrgang','jugendfeuerwehr','pfadfinder','nachwuchs']},
  {id:'erinnern', titel:'Geschichte und Erinnern', w:19,
   note:'Aufarbeitung, Gedenken, Fundstücke. Bilder gibt es über Orte, Dokumente und Zeitzeugen.',
   words:['gedenk','erinnert an','erinnerung','zeitzeug','nationalsozial','ns-zeit','stalag','euthanasie','stolperstein','aufarbeit','archiv','chronik','denkmal','historisch','heimatverein','nachlass','ausgrabung','fund','restauriert','jahrestag','kriegsgefangen','zwangsarbeit','museumsstück','vergessen','spurensuche']},
@@ -423,7 +423,7 @@ const RUBRIKEN=[
   words:['ärger um','streit','protest','bürgerinitiative','kritik','wehren sich','petition','droht','bedroht','schließung','schließt','letzte chance','insolvenz','marode','sperrung','lärm','gestank','verzögert','baustelle','abriss','umstritten','beschwerde','gegen den','gegen die','sorgen sich','wut']},
  {id:'mitmachen', titel:'Zum Anschauen und Ausprobieren', w:16,
   note:'Feste, Ausstellungen, Mitmachaktionen. Gut als Tipp am Ende der Sendung.',
-  words:['festival','stadtfest','markt','ausstellung','konzert','premiere','führung','tag der offenen tür','mitmachen','workshop','freibad','schwimmbad','wanderung','ausflug','öffnet','eröffnet','saison','spielplan','lesung','kirmes','weihnachtsmarkt','adventsmarkt','ferienprogramm']},
+  words:['festival','stadtfest','markt','ausstellung','konzert','premiere','führung','tag der offenen tür','mitmachen','workshop','freibad','schwimmbad','wanderung','ausflug','öffnet','eröffnet','saison','spielplan','lesung','kirmes','weihnachtsmarkt','adventsmarkt','ferienprogramm','award','preisverleihung','ausgezeichnet','gewinnerin','siegerteam','nominiert','pitch','startup','gründungsteam','wettbewerb','tag der','mitmachaktion']},
  {id:'forschung', titel:'Forschung zum Anfassen', w:16,
   note:'Wissenschaft aus der Region, wenn es etwas zu zeigen gibt: Labor, Versuch, Feldarbeit.',
   words:['forsch','studie','untersucht','experiment','labor','entwickelt','erfind','roboter','künstliche intelligenz','sensor','prototyp','uni bielefeld','hochschule','th owl','promotion','feldversuch','messung']},
@@ -443,7 +443,7 @@ RUB.offen={titel:'Weitere Fundstücke', note:'Kein klares Muster erkannt — loh
 const LS='stoffradar.v2';
 let S={
   sources:null,
-  prefs:{mode:'vorschlag', sort:'rubrik', hideDaily:true, group:true, hideRead:false, radar:[], schwelle:28, monat:null, kreis:null},
+  prefs:{mode:'vorschlag', sort:'rubrik', hideDaily:true, group:true, hideRead:false, radar:[], schwelle:25, monat:null, kreis:null},
   saved:{}, read:{}, notes:{}, cache:{}, lastRun:0, letzte:null
 };
 let ARTICLES=[], BUSY=false, STATS={};
@@ -557,28 +557,92 @@ function readMarkdown(md, base){
   return out;
 }
 
-/* Wenn kein Feed da ist: Überschriften der Seite lesen */
+/* Kein Feed? Dann die Artikelliste der Seite erkennen.
+   Kern der Sache: echte Beiträge liegen als Gruppe unterhalb der Listenseite
+   und haben lange Adress-Bestandteile. Navigation nicht. */
+const NAVWORTE=/^(mehr|weiterlesen|weitere|startseite|kontakt|impressum|datenschutz|barrierefreiheit|sitemap|suche|anmelden|login|logout|newsletter|zur startseite|alle anzeigen|nach oben|cookie|menü|hauptmenü|english|leichte sprache|gebärdensprache|feedback|stellenangebote|alle pressemitteilungen|archiv)$/i;
+const DATUM=/(\d{1,2})\.(\d{1,2})\.(\d{4})|(\d{1,2})\.\s*(Januar|Februar|März|April|Mai|Juni|Juli|August|September|Oktober|November|Dezember)\s*(\d{4})/;
+
+function pfadTeile(u){ try{ return new URL(u).pathname.replace(/\/+$/,'').split('/').filter(Boolean); }catch(e){ return []; } }
+function slugWert(u){
+  const t=pfadTeile(u); if(!t.length) return 0;
+  const letzt=t[t.length-1];
+  const striche=(letzt.match(/-/g)||[]).length;
+  return striche>=3 ? 3 : striche>=2 ? 2 : 0;
+}
+function datumAus(text){
+  const m=(text||'').match(DATUM); if(!m) return 0;
+  let ts;
+  if(m[1]) ts=new Date(+m[3], +m[2]-1, +m[1], 12).getTime();
+  else {
+    const MON={januar:0,februar:1,'märz':2,april:3,mai:4,juni:5,juli:6,august:7,september:8,oktober:9,november:10,dezember:11};
+    ts=new Date(+m[6], MON[m[5].toLowerCase()], +m[4], 12).getTime();
+  }
+  return isNaN(ts)?0:ts;
+}
+
 function readHeadlines(html, base){
   const doc=new DOMParser().parseFromString(html,'text/html');
-  doc.querySelectorAll('nav,header,footer,script,style,aside').forEach(e=>e.remove());
-  const host=(()=>{try{return new URL(base).host}catch(e){return ''}})();
-  const raus=/^(mehr|weiterlesen|startseite|kontakt|impressum|datenschutz|suche|anmelden|login|cookie|newsletter|zur startseite|alle anzeigen|nach oben)$/i;
-  const seen=new Set(), out=[];
+  doc.querySelectorAll('script,style,noscript,nav,header,footer,aside,form,select').forEach(e=>e.remove());
+  let host='', basisPfad=[];
+  try{ const u=new URL(base); host=u.host; basisPfad=u.pathname.replace(/\/+$/,'').split('/').filter(Boolean); }catch(e){}
+
+  // 1. Kandidaten sammeln, nach Adresse zusammenfassen
+  const proHref=new Map();
   for(const a of doc.querySelectorAll('a[href]')){
-    const t=clean(a.textContent);
-    if(t.length<26||t.length>170) continue;
-    if(raus.test(t)) continue;
-    if(!/[a-zäöüß]/i.test(t)) continue;
-    const href=abs(base,a.getAttribute('href')); if(!href) continue;
-    try{ if(new URL(href).host!==host) continue; }catch(e){ continue; }
-    const key=t.toLowerCase().slice(0,60); if(seen.has(key)) continue; seen.add(key);
-    // Text im Umfeld als Beschreibung
-    let desc='';
-    const p=a.closest('li,article,div');
-    if(p){ const pt=clean(p.textContent); if(pt.length>t.length+25) desc=pt.replace(t,'').trim().slice(0,300); }
-    out.push({title:t, link:href, desc, ts:0, outlet:''});
-    if(out.length>=30) break;
+    const roh=a.getAttribute('href'); if(!roh||/^(#|javascript:|mailto:|tel:)/i.test(roh)) continue;
+    let href; try{ href=new URL(roh, base); }catch(e){ continue; }
+    if(href.host!==host) continue;
+    href.hash=''; const key=href.href;
+    const t=(a.textContent||'').replace(/\s+/g,' ').trim();
+    const inUeberschrift=!!a.closest('h1,h2,h3,h4');
+    const eintrag=proHref.get(key)||{href:key, titel:'', ueberschrift:false, knoten:a};
+    if(t.length>eintrag.titel.length && !NAVWORTE.test(t)){ eintrag.titel=t; eintrag.knoten=a; }
+    eintrag.ueberschrift=eintrag.ueberschrift||inUeberschrift;
+    proHref.set(key, eintrag);
   }
+
+  // 2. Gruppen bilden: gleiche Adress-Ebene = vermutlich dieselbe Rubrik
+  const gruppen=new Map();
+  for(const e of proHref.values()){
+    if(!e.titel||e.titel.length<18||NAVWORTE.test(e.titel)) continue;
+    const t=pfadTeile(e.href); if(t.length<1) continue;
+    const ebene=t.slice(0,-1).join('/');
+    e.tiefe=t.length; e.slug=slugWert(e.href);
+    e.unterBasis = basisPfad.length>0 && t.length>basisPfad.length && basisPfad.every((x,i)=>t[i]===x);
+    if(!gruppen.has(ebene)) gruppen.set(ebene,[]);
+    gruppen.get(ebene).push(e);
+  }
+
+  // 3. beste Gruppe wählen
+  let beste=null, bestW=0;
+  for(const [ebene,liste] of gruppen){
+    if(liste.length<3) continue;
+    const mitSlug=liste.filter(e=>e.slug>=2).length;
+    const mitUeber=liste.filter(e=>e.ueberschrift).length;
+    const unter=liste.filter(e=>e.unterBasis).length;
+    const w = mitSlug*3 + mitUeber*3 + unter*4 + Math.min(liste.length,12);
+    if(w>bestW){ bestW=w; beste=liste; }
+  }
+  if(!beste) return [];
+
+  // 4. Umfeld auswerten: Datum und Teasertext
+  const out=[], gesehen=new Set();
+  for(const e of beste.slice(0,30)){
+    if(gesehen.has(e.href)) continue; gesehen.add(e.href);
+    let box=e.knoten, umfeld='';
+    for(let i=0;i<4 && box;i++){
+      box=box.parentElement;
+      if(!box) break;
+      const t=(box.textContent||'').replace(/\s+/g,' ').trim();
+      if(t.length>e.titel.length+50){ umfeld=t; break; }
+    }
+    const ts=datumAus(umfeld)||datumAus(e.titel);
+    let desc=umfeld.replace(e.titel,' ').replace(DATUM,' ').replace(/\s+/g,' ').trim();
+    desc=desc.replace(/^(Mehr|Weiterlesen|Foto:?)\s*/i,'').slice(0,340);
+    out.push({title:e.titel, link:e.href, desc, ts, outlet:''});
+  }
+  out.sort((a,b)=>(b.ts||0)-(a.ts||0));
   return out;
 }
 
@@ -658,7 +722,7 @@ function bewerte(a){
     for(const w of r.words){ if(hay.includes(w)){ hit++; if(hit>=3) break; } }
     if(hit){
       const wert=r.w+(hit>1?6:0)+(hit>2?4:0);
-      s+=Math.round(wert*0.6);
+      s+=Math.round(wert*0.9);
       tags.push(r.titel.split(',')[0]);
       if(wert>bestW){ bestW=wert; beste=r.id; }
     }
@@ -667,7 +731,8 @@ function bewerte(a){
   const routine=ROUTINE.some(w=>hay.includes(w));
 
   // Ort im Zuständigkeitsgebiet
-  const ort=findeOrt(a.title+' '+(a.desc||'')) || findeOrt(a.source||'');
+  let ort=findeOrt(a.title+' '+(a.desc||'')) || findeOrt(a.source||'');
+  if(!ort && a.quellOrt && ORTE[a.quellOrt]) ort={ort:a.quellOrt, gebiet:ORTE[a.quellOrt].g};
   a.ort=ort?ort.ort:null; a.gebiet=ort?ort.gebiet:null;
   if(ort) s+=14;
 
@@ -744,7 +809,7 @@ async function lauf(){
       const src=queue.shift(); src.status='load';
       try{
         const items=await leseQuelle(src);
-        items.forEach(it=>{ it.source=src.name; it.sourceId=src.id; it.id=(it.link||it.title).slice(0,220); ARTICLES.push(bewerte(it)); });
+        items.forEach(it=>{ it.source=src.name; it.sourceId=src.id; it.quellOrt=src.o||null; it.id=(it.link||it.title).slice(0,220); ARTICLES.push(bewerte(it)); });
         src.count=items.length; src.status=items.length?'ok':'empty';
       }catch(e){ src.status='err'; src.err=(e&&e.message)||'Fehler'; }
       fertig++;
@@ -1034,7 +1099,7 @@ dlgBody.addEventListener('click',async e=>{
     src.status='load'; renderSources();
     try{
       const items=await leseQuelle(src);
-      items.forEach(it=>{ it.source=src.name; it.sourceId=src.id; it.id=(it.link||it.title).slice(0,220); ARTICLES.push(bewerte(it)); });
+      items.forEach(it=>{ it.source=src.name; it.sourceId=src.id; it.quellOrt=src.o||null; it.id=(it.link||it.title).slice(0,220); ARTICLES.push(bewerte(it)); });
       src.count=items.length; src.status=items.length?'ok':'empty';
     }catch(err){ src.status='err'; src.err=err.message; }
     save(); renderSources(); render();
